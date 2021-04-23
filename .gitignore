@@ -12,5 +12,4 @@ setup/Release
 setup/*.cmd
 pages/
 cov-int*
-compile.bat
-sdlna/build
+/.vs

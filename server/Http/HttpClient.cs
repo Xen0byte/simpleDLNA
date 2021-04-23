@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -331,7 +331,7 @@ namespace NMaier.SimpleDlna.Server
           responseStream.AddStream(responseBody);
           responseBody = null;
         }
-        DebugFormat("{0} - {1} response for {2}", this, (uint)statusCode, Path);
+        InfoFormat("{0} - {1} response for {2}", this, (uint)statusCode, Path);
         state = HttpStates.Writing;
         var sp = new StreamPump(responseStream, stream, BUFFER_SIZE);
         sp.Pump((pump, result) =>
@@ -371,22 +371,26 @@ namespace NMaier.SimpleDlna.Server
           throw new HttpStatusException(HttpCode.Denied);
         }
         if (string.IsNullOrEmpty(Path)) {
-          throw new HttpStatusException(HttpCode.NotFound);
+          response = error404.HandleRequest(this);
+          //throw new HttpStatusException(HttpCode.NotFound);
+        } else
+        {
+          var handler = owner.FindHandler(Path);
+          if (handler == null)
+          {
+            throw new HttpStatusException(HttpCode.NotFound);
+          }
+          response = handler.HandleRequest(this);
         }
-        var handler = owner.FindHandler(Path);
-        if (handler == null) {
-          throw new HttpStatusException(HttpCode.NotFound);
-        }
-        response = handler.HandleRequest(this);
         if (response == null) {
           throw new ArgumentException("Handler did not return a response");
         }
       }
       catch (HttpStatusException ex) {
 #if DEBUG
-        Warn(String.Format("{0} - Got a {2}: {1}", this, path, ex.Code), ex);
+        Warn(String.Format("{0} - Got a {2}: {1}", this, Path, ex.Code), ex);
 #else
-        DebugFormat("{0} - Got a {2}: {1}", this, Path, ex.Code);
+        InfoFormat("{0} - Got a {2}: {1}", this, Path, ex.Code);
 #endif
         switch (ex.Code) {
         case HttpCode.NotFound:

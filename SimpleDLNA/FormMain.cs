@@ -1,4 +1,11 @@
-﻿using System;
+using log4net;
+using log4net.Appender;
+using log4net.Config;
+using log4net.Core;
+using log4net.Layout;
+using NMaier.SimpleDlna.GUI.Properties;
+using NMaier.SimpleDlna.Server;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,15 +18,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using System.Xml.Serialization;
-using log4net;
-using log4net.Appender;
-using log4net.Config;
-using log4net.Core;
-using log4net.Layout;
-using NMaier.SimpleDlna.GUI.Properties;
-using NMaier.SimpleDlna.Server;
 using Form = NMaier.Windows.Forms.Form;
-using SystemInformation = NMaier.SimpleDlna.Utilities.SystemInformation;
 using Timer = System.Timers.Timer;
 
 namespace NMaier.SimpleDlna.GUI
@@ -37,7 +36,7 @@ namespace NMaier.SimpleDlna.GUI
 
 #if DEBUG
     private readonly FileInfo logFile =
-      new FileInfo(Path.Combine(cacheDir, "sdlna.dbg.log"));
+      new FileInfo(Path.Combine(CacheDir, "sdlna.dbg.log"));
 #else
     private readonly FileInfo logFile =
       new FileInfo(Path.Combine(CacheDir, "sdlna.log"));
@@ -83,9 +82,18 @@ namespace NMaier.SimpleDlna.GUI
       StartPipeNotification();
 
       notifyIcon.Icon = Icon;
+
       if (!string.IsNullOrWhiteSpace(config.cache)) {
-        cacheFile = new FileInfo(config.cache);
+        if (Directory.Exists(config.cache))
+        {
+          cacheFile = new FileInfo(Path.Combine(config.cache, "sdlna.cache"));
+        } else
+        {
+          cacheFile = new FileInfo(config.cache);
+        }
       }
+
+      Utilities.MKVTools.Initialise(config.mkvTools);
       CreateHandle();
       SetupServer();
     }
@@ -527,10 +535,10 @@ namespace NMaier.SimpleDlna.GUI
 #if DEBUG
       log.Info("Debug mode / Skipping one-instance-only stuff");
 #else
-      if (SystemInformation.IsRunningOnMono()) {
+      /*if (SystemInformation.IsRunningOnMono()) {
         // XXX Mono sometimes stack overflows for whatever reason.
         return;
-      }
+      }*/
       new Thread(() =>
       {
         for (;;) {

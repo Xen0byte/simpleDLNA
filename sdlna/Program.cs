@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -72,6 +72,7 @@ namespace NMaier.SimpleDlna
         Console.CancelKeyPress += CancelKeyPressed;
 
         options.Parse(args);
+        MKVTools.Initialise(options.MKVTools.DirectoryName);
         if (options.ShowHelp) {
           options.PrintUsage();
           return;
@@ -137,11 +138,6 @@ namespace NMaier.SimpleDlna
                 server.InfoFormat(
                   "Mounting FileServer for {0} ({1})",
                   options.Directories[0], options.Directories.Length);
-				if (!options.Rescanning) {
-				  server.InfoFormat("Rescanning disabled");
-				} else {
-				  server.InfoFormat("Rescanning enabled");
-				}
                 var fs = SetupFileServer(options, types, options.Directories);
                 friendlyName = fs.FriendlyName;
                 server.RegisterMediaServer(fs);

@@ -61,7 +61,7 @@ namespace NMaier.SimpleDlna.Server
     private static readonly string[] extPNG =
     {"png"};
 
-    private static readonly string[] extWAV =
+    private static readonly string[] extRAWAUDIO =
     {"wav"};
 
     private static readonly string[] extVORBIS =
@@ -91,17 +91,18 @@ namespace NMaier.SimpleDlna.Server
       {DlnaMime.AudioFLAC, "audio/flac"},
       {DlnaMime.AudioMP2, "audio/mpeg"},
       {DlnaMime.AudioMP3, "audio/mpeg"},
-      {DlnaMime.AudioWAV, "audio/wav"},
+      {DlnaMime.AudioRAW, "audio/L16;rate=44100;channels=2"},
       {DlnaMime.AudioVORBIS, "audio/ogg"},
       {DlnaMime.ImageGIF, "image/gif"},
       {DlnaMime.ImageJPEG, "image/jpeg"},
       {DlnaMime.ImagePNG, "image/png"},
       {DlnaMime.SubtitleSRT, "smi/caption"},
+      {DlnaMime.SubtitleSRT2, "text/srt"},
       {DlnaMime.Video3GPP, "video/3gpp"},
       {DlnaMime.VideoAVC, "video/mp4"},
       {DlnaMime.VideoAVI, "video/avi"},
       {DlnaMime.VideoFLV, "video/flv"},
-      {DlnaMime.VideoMKV, "video/x-mkv"},
+      {DlnaMime.VideoMKV, "video/x-matroska"},
       {DlnaMime.VideoMPEG, "video/mpeg"},
       {DlnaMime.VideoOGV, "video/ogg"},
       {DlnaMime.VideoWMV, "video/x-ms-wmv"}
@@ -134,9 +135,9 @@ namespace NMaier.SimpleDlna.Server
         }
       },
       {
-        DlnaMime.AudioWAV, new List<string>
+        DlnaMime.AudioRAW, new List<string>
         {
-          "WAV"
+          "LPCM"
         }
       },
       {
@@ -304,7 +305,7 @@ namespace NMaier.SimpleDlna.Server
         new
         {t = DlnaMime.AudioMP3, e = extMP3},
         new
-        {t = DlnaMime.AudioWAV, e = extWAV},
+        {t = DlnaMime.AudioRAW, e = extRAWAUDIO},
         new
         {t = DlnaMime.AudioVORBIS, e = extVORBIS},
         new
@@ -346,7 +347,7 @@ namespace NMaier.SimpleDlna.Server
         new[] {extJPEG, extPNG, extGIF},
         DlnaMediaTypes.Image);
       InitMedia(
-        new[] {extAAC, extFLAC, extMP2, extMP3, extWAV, extVORBIS},
+        new[] {extAAC, extFLAC, extMP2, extMP3, extRAWAUDIO, extVORBIS},
         DlnaMediaTypes.Audio);
     }
 
@@ -367,7 +368,11 @@ namespace NMaier.SimpleDlna.Server
         var e = (from ext in i
                  select ext.ToUpperInvariant()).ToList();
         try {
-          Media2Ext.Add(t, e);
+          if (Media2Ext.ContainsKey(t))
+          { Media2Ext[t].AddRange(e); }
+          else { 
+            Media2Ext.Add(t, e);
+          }
         }
         catch (ArgumentException) {
           Media2Ext[t].AddRange(e);
