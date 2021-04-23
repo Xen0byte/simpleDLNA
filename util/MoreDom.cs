@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Xml;
 
 namespace NMaier.SimpleDlna.Utilities
 {
@@ -24,18 +23,12 @@ namespace NMaier.SimpleDlna.Utilities
     public static XmlElement EL(this XmlDocument doc, string name,
       AttributeCollection attributes, string text)
     {
-      if (doc == null) {
-        throw new ArgumentNullException(nameof(doc));
-      }
+      if (doc == null) throw new ArgumentNullException(nameof(doc));
       var rv = doc.CreateElement(name);
-      if (text != null) {
-        rv.InnerText = text;
-      }
-      if (attributes != null) {
-        foreach (var i in attributes) {
+      if (text != null) rv.InnerText = text;
+      if (attributes != null)
+        foreach (var i in attributes)
           rv.SetAttribute(i.Key, i.Value);
-        }
-      }
       return rv;
     }
   }

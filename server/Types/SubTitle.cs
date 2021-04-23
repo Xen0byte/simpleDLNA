@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using log4net;
 using NMaier.SimpleDlna.Utilities;
 
 namespace NMaier.SimpleDlna.Server
@@ -11,7 +10,7 @@ namespace NMaier.SimpleDlna.Server
   public sealed class Subtitle : IMediaResource
   {
     [NonSerialized] private static readonly ILog logger =
-      LogManager.GetLogger(typeof (Subtitle));
+      LogManager.GetLogger(typeof(Subtitle));
 
     [NonSerialized] private static readonly string[] exts =
     {
@@ -46,33 +45,31 @@ namespace NMaier.SimpleDlna.Server
 
     public long? InfoSize
     {
-      get {
-        try {
-          using (var s = CreateContentStream()) {
+      get
+      {
+        try
+        {
+          using (var s = CreateContentStream())
+          {
             return s.Length;
           }
         }
-        catch (Exception) {
+        catch (Exception)
+        {
           return null;
         }
       }
     }
 
-    public IMediaCoverResource Cover
-    {
-      get { throw new NotImplementedException(); }
-    }
+    public IMediaCoverResource Cover => throw new NotImplementedException();
 
     public string Id
     {
-      get { return Path; }
-      set { throw new NotImplementedException(); }
+      get => Path;
+      set => throw new NotImplementedException();
     }
 
-    public DlnaMediaTypes MediaType
-    {
-      get { throw new NotImplementedException(); }
-    }
+    public DlnaMediaTypes MediaType => throw new NotImplementedException();
 
     public string Path => "ad-hoc-subtitle:";
 
@@ -80,22 +77,22 @@ namespace NMaier.SimpleDlna.Server
 
     public IHeaders Properties
     {
-      get {
+      get
+      {
         var rv = new RawHeaders {{"Type", Type.ToString()}};
-        if (InfoSize.HasValue) {
+        if (InfoSize.HasValue)
+        {
           rv.Add("SizeRaw", InfoSize.ToString());
           rv.Add("Size", InfoSize.Value.FormatFileSize());
         }
+
         rv.Add("Date", InfoDate.ToString(CultureInfo.InvariantCulture));
         rv.Add("DateO", InfoDate.ToString("o"));
         return rv;
       }
     }
 
-    public string Title
-    {
-      get { throw new NotImplementedException(); }
-    }
+    public string Title => throw new NotImplementedException();
 
     public DlnaMime Type => DlnaMime.SubtitleSRT;
 
@@ -106,12 +103,8 @@ namespace NMaier.SimpleDlna.Server
 
     public Stream CreateContentStream()
     {
-      if (!HasSubtitle) {
-        throw new NotSupportedException();
-      }
-      if (encodedText == null) {
-        encodedText = Encoding.UTF8.GetBytes(text);
-      }
+      if (!HasSubtitle) throw new NotSupportedException();
+      if (encodedText == null) encodedText = Encoding.UTF8.GetBytes(text);
       return new MemoryStream(encodedText, false);
     }
 
@@ -127,33 +120,33 @@ namespace NMaier.SimpleDlna.Server
 
     private void Load(FileInfo file, bool fileOnly)
     {
-      try {
+      try
+      {
         // Try external file types for subtitle
-        foreach (var i in exts) {
+        foreach (var i in exts)
+        {
           var sti = new FileInfo(
             // Look for movie.sub type file name
             System.IO.Path.ChangeExtension(file.FullName, i));
-          try {
-            if (!sti.Exists) {
-              // Also look for movie.vid.sub type file name
+          try
+          {
+            if (!sti.Exists) // Also look for movie.vid.sub type file name
               sti = new FileInfo(file.FullName + i);
-            }
-            if (!sti.Exists) {
-              continue;
-            }
+            if (!sti.Exists) continue;
             text = FFmpeg.GetSubtitleSubrip(sti, true);
             logger.DebugFormat("Loaded subtitle from {0}", sti.FullName);
           }
-          catch (NotSupportedException) {
+          catch (NotSupportedException)
+          {
           }
-          catch (Exception ex) {
+          catch (Exception ex)
+          {
             logger.Debug($"Failed to get subtitle from {sti.FullName}", ex);
           }
         }
 
         // Inspect the video file for subtitles
         if (string.IsNullOrEmpty(text) && !fileOnly)
-        {
           try
           {
             text = FFmpeg.GetSubtitleSubrip(file, false);
@@ -167,10 +160,9 @@ namespace NMaier.SimpleDlna.Server
           {
             logger.Debug($"Failed to get subtitle from {file.FullName}", ex);
           }
-
-        }
       }
-      catch (Exception ex) {
+      catch (Exception ex)
+      {
         logger.Error($"Failed to load subtitle for {file.FullName}", ex);
       }
     }

@@ -18,8 +18,8 @@ namespace NMaier.SimpleDlna.Server
 
     public string Id
     {
-      get { return Resource.Id; }
-      set { Resource.Id = value; }
+      get => Resource.Id;
+      set => Resource.Id = value;
     }
 
     public virtual DlnaMediaTypes MediaType => Resource.MediaType;

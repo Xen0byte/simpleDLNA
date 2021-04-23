@@ -17,9 +17,7 @@ namespace NMaier.SimpleDlna.Thumbnails
     public VideoThumbnailLoader()
     {
       if (FFmpeg.FFmpegExecutable == null && MKVTools.Loaded == false)
-      {
         throw new NotSupportedException("No tools available");
-      }
     }
 
     public void Dispose()
@@ -40,15 +38,9 @@ namespace NMaier.SimpleDlna.Thumbnails
       try
       {
         var stream = item as Stream;
-        if (stream != null)
-        {
-          return GetThumbnailInternal(stream, ref width, ref height);
-        }
+        if (stream != null) return GetThumbnailInternal(stream, ref width, ref height);
         var fi = item as FileInfo;
-        if (fi != null)
-        {
-          return GetThumbnailInternal(fi, ref width, ref height);
-        }
+        if (fi != null) return GetThumbnailInternal(fi, ref width, ref height);
         throw new NotSupportedException();
       }
       finally
@@ -75,26 +67,19 @@ namespace NMaier.SimpleDlna.Thumbnails
               lastPosition = thumb.Position;
               continue;
             }
+
             p.Kill();
             throw new ArgumentException("ffmpeg timed out");
           }
-          if (p.ExitCode != 0)
-          {
-            throw new ArgumentException("ffmpeg does not understand the stream");
-          }
-          if (!pump.Wait(2000))
-          {
-            throw new ArgumentException("stream reading timed out");
-          }
-          if (thumb.Length == 0)
-          {
-            throw new ArgumentException("ffmpeg did not produce a result");
-          }
+
+          if (p.ExitCode != 0) throw new ArgumentException("ffmpeg does not understand the stream");
+          if (!pump.Wait(2000)) throw new ArgumentException("stream reading timed out");
+          if (thumb.Length == 0) throw new ArgumentException("ffmpeg did not produce a result");
 
           using (var img = Image.FromStream(thumb))
           {
             using (var scaled = ThumbnailMaker.ResizeImage(img, width, height,
-                                                           ThumbnailMakerBorder.Bordered))
+              ThumbnailMakerBorder.Bordered))
             {
               width = scaled.Width;
               height = scaled.Height;
@@ -137,10 +122,7 @@ namespace NMaier.SimpleDlna.Thumbnails
             }
             else
             {
-              if (length > 50 * (1 << 20))
-              {
-                pos = 60;
-              }
+              if (length > 50 * (1 << 20)) pos = 60;
             }
           }
         }
@@ -188,7 +170,6 @@ namespace NMaier.SimpleDlna.Thumbnails
       for (var best = IdentifyBestCapturePosition(file);
         best >= 0;
         best -= Math.Max(best / 2, 5))
-      {
         try
         {
           using (var p = new Process())
@@ -212,7 +193,7 @@ namespace NMaier.SimpleDlna.Thumbnails
         {
           last = ex;
         }
-      }
+
       throw last ?? new Exception("Not reached");
     }
 
@@ -221,37 +202,20 @@ namespace NMaier.SimpleDlna.Thumbnails
       try
       {
         var dur = FFmpeg.GetFileDuration(file);
-        if (dur > 600)
-        {
-          return (long)(dur / 5.0);
-        }
-        return (long)(dur / 3.0);
+        if (dur > 600) return (long) (dur / 5.0);
+        return (long) (dur / 3.0);
       }
       catch (Exception ex)
       {
         Debug("Failed to get file duration", ex);
       }
+
       var length = file.Length;
-      if (length < 10 * (1 << 20))
-      {
-        return 5;
-      }
-      if (length > 50 * (1 << 20))
-      {
-        return 60;
-      }
-      if (length > 100 * (1 << 20))
-      {
-        return 120;
-      }
-      if (length > 500 * (1 << 20))
-      {
-        return 300;
-      }
-      if (length > 750 * (1 << 20))
-      {
-        return 600;
-      }
+      if (length < 10 * (1 << 20)) return 5;
+      if (length > 50 * (1 << 20)) return 60;
+      if (length > 100 * (1 << 20)) return 120;
+      if (length > 500 * (1 << 20)) return 300;
+      if (length > 750 * (1 << 20)) return 600;
       return 20;
     }
   }

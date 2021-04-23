@@ -31,32 +31,40 @@ namespace NMaier.SimpleDlna.Server.Ssdp
     public void Send()
     {
       var msg = Encoding.ASCII.GetBytes(Message);
-      try {
+      try
+      {
         var client = new UdpClient();
         client.Client.Bind(new IPEndPoint(LocalAddress, 0));
         client.Ttl = 10;
         client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 10);
         client.BeginSend(msg, msg.Length, EndPoint, result =>
         {
-          try {
+          try
+          {
             client.EndSend(result);
           }
-          catch (Exception ex) {
+          catch (Exception ex)
+          {
             Debug(ex);
           }
-          finally {
-            try {
+          finally
+          {
+            try
+            {
               client.Close();
             }
-            catch (Exception) {
+            catch (Exception)
+            {
               // ignored
             }
           }
         }, null);
       }
-      catch (Exception ex) {
+      catch (Exception ex)
+      {
         Error(ex);
       }
+
       ++SendCount;
     }
   }

@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using NMaier.SimpleDlna.GUI.Properties;
+using NMaier.SimpleDlna.Utilities;
 using Form = NMaier.Windows.Forms.Form;
 using SystemInformation = NMaier.SimpleDlna.Utilities.SystemInformation;
 
@@ -17,35 +18,33 @@ namespace NMaier.SimpleDlna.GUI
       InitializeComponent();
       Icon = Resources.preferencesIcon;
 
-      if (!SystemInformation.IsRunningOnMono()) {
+      if (!SystemInformation.IsRunningOnMono())
+      {
         startUpUtilities = new StartupUtilities(StartupUtilities.StartupUserScope.CurrentUser);
         checkAutoStart.Checked = startUpUtilities.CheckIfRunAtWinBoot(APP_KEY_NAME);
       }
-      else {
+      else
+      {
         checkAutoStart.Visible = false;
       }
     }
 
     private void buttonBrowseCacheFile_Click(object sender, EventArgs e)
     {
-      if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
-        textCacheFile.Text = folderBrowserDialog.SelectedPath;
-      }
+      if (folderBrowserDialog.ShowDialog() == DialogResult.OK) textCacheFile.Text = folderBrowserDialog.SelectedPath;
     }
 
     private void checkAutoStart_CheckedChanged(object sender, EventArgs e)
     {
-      if (checkAutoStart.Checked) {
+      if (checkAutoStart.Checked)
         startUpUtilities.InstallAutoRun(APP_KEY_NAME);
-      }
-      else {
+      else
         startUpUtilities.UninstallAutoRun(APP_KEY_NAME);
-      }
     }
 
-        private void buttonOK_Click(object sender, EventArgs e)
-        {
-            Utilities.MKVTools.Initialise(textMKVToolsDirectory.Text);
-        }
+    private void buttonOK_Click(object sender, EventArgs e)
+    {
+      MKVTools.Initialise(textMKVToolsDirectory.Text);
     }
+  }
 }

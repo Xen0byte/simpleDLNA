@@ -17,30 +17,31 @@ namespace NMaier.SimpleDlna.FileMediaServer
       Server = server;
       this.dir = dir;
       var rawfiles = from f in dir.GetFiles("*.*")
-                     select f;
+        select f;
       var files = new List<BaseFile>();
-      foreach (var f in rawfiles) {
+      foreach (var f in rawfiles)
+      {
         var ext = f.Extension;
         if (string.IsNullOrEmpty(ext) ||
-            !server.Filter.Filtered(ext.Substring(1))) {
+            !server.Filter.Filtered(ext.Substring(1)))
           continue;
-        }
-        try {
+        try
+        {
           var file = server.GetFile(this, f);
-          if (server.Allowed(file)) {
-            files.Add(file);
-          }
+          if (server.Allowed(file)) files.Add(file);
         }
-        catch (Exception ex) {
+        catch (Exception ex)
+        {
           server.Warn(f, ex);
         }
       }
+
       Resources.AddRange(files);
 
       Folders = (from d in dir.GetDirectories()
-                 let m = TryGetFolder(server, d)
-                 where m != null && m.ChildCount > 0
-                 select m as IMediaFolder).ToList();
+        let m = TryGetFolder(server, d)
+        where m != null && m.ChildCount > 0
+        select m as IMediaFolder).ToList();
     }
 
     public override string Path => dir.FullName;
@@ -55,13 +56,13 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     private PlainFolder TryGetFolder(FileServer server, DirectoryInfo d)
     {
-      try {
+      try
+      {
         return new PlainFolder(server, this, d);
       }
-      catch (Exception ex) {
-        if (!d.Name.Equals("System Volume Information")) {
-          server.Warn("Failed to access folder", ex);
-        }
+      catch (Exception ex)
+      {
+        if (!d.Name.Equals("System Volume Information")) server.Warn("Failed to access folder", ex);
         return null;
       }
     }

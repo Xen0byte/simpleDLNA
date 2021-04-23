@@ -26,13 +26,11 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     private Cover(SerializationInfo info, StreamingContext ctx)
     {
-      bytes = info.GetValue("b", typeof (byte[])) as byte[];
+      bytes = info.GetValue("b", typeof(byte[])) as byte[];
       width = info.GetInt32("w");
       height = info.GetInt32("h");
       var di = ctx.Context as DeserializeInfo;
-      if (di != null) {
-        file = di.Info;
-      }
+      if (di != null) file = di.Info;
     }
 
     internal Cover(FileInfo aFile, Stream aStream)
@@ -43,7 +41,7 @@ namespace NMaier.SimpleDlna.FileMediaServer
         aStream,
         width,
         height
-        );
+      );
       bytes = thumb.GetData();
       height = thumb.Height;
       width = thumb.Width;
@@ -56,21 +54,25 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     private byte[] Bytes
     {
-      get {
+      get
+      {
         var rv = ForceLoad();
-        if (rv == null || rv.Length == 0) {
-          throw new NotSupportedException();
-        }
+        if (rv == null || rv.Length == 0) throw new NotSupportedException();
         return rv;
       }
+    }
+
+    public void Dispose()
+    {
+      bytes = null;
     }
 
     IMediaCoverResource IMediaCover.Cover => this;
 
     public string Id
     {
-      get { throw new NotSupportedException(); }
-      set { throw new NotSupportedException(); }
+      get => throw new NotSupportedException();
+      set => throw new NotSupportedException();
     }
 
     public DlnaMediaTypes MediaType => DlnaMediaTypes.Image;
@@ -79,22 +81,13 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     public int? MetaWidth => width;
 
-    public string Path
-    {
-      get { throw new NotSupportedException(); }
-    }
+    public string Path => throw new NotSupportedException();
 
     public string PN => "JPEG_TN";
 
-    public IHeaders Properties
-    {
-      get { throw new NotSupportedException(); }
-    }
+    public IHeaders Properties => throw new NotSupportedException();
 
-    public string Title
-    {
-      get { throw new NotSupportedException(); }
-    }
+    public string Title => throw new NotSupportedException();
 
     public DlnaMime Type => DlnaMime.ImageJPEG;
 
@@ -120,22 +113,24 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     public DateTime InfoDate
     {
-      get {
-        if (file != null) {
-          return file.LastWriteTimeUtc;
-        }
+      get
+      {
+        if (file != null) return file.LastWriteTimeUtc;
         return DateTime.Now;
       }
     }
 
     public long? InfoSize
     {
-      get {
-        try {
+      get
+      {
+        try
+        {
           var b = Bytes;
           return b?.Length;
         }
-        catch (NotSupportedException) {
+        catch (NotSupportedException)
+        {
           return null;
         }
       }
@@ -143,12 +138,8 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     public void GetObjectData(SerializationInfo info, StreamingContext ctx)
     {
-      if (info == null) {
-        throw new ArgumentNullException(nameof(info));
-      }
-      if (bytes == null) {
-        throw new NotSupportedException("No cover loaded");
-      }
+      if (info == null) throw new ArgumentNullException(nameof(info));
+      if (bytes == null) throw new NotSupportedException("No cover loaded");
       info.AddValue("b", bytes);
       info.AddValue("w", width);
       info.AddValue("h", height);
@@ -158,41 +149,42 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     internal byte[] ForceLoad()
     {
-      try {
-        if (bytes == null) {
+      try
+      {
+        if (bytes == null)
+        {
           var thumb = thumber.GetThumbnail(
             file,
             width,
             height
-            );
+          );
           bytes = thumb.GetData();
           height = thumb.Height;
           width = thumb.Width;
         }
       }
-      catch (NotSupportedException ex) {
+      catch (NotSupportedException ex)
+      {
         Debug("Failed to load thumb for " + file.FullName, ex);
       }
-      catch (Exception ex) {
-        if (!warned) {
+      catch (Exception ex)
+      {
+        if (!warned)
+        {
           Warn("Failed to load thumb for " + file.FullName, ex);
           warned = true;
         }
-        else {
+        else
+        {
           Debug("Failed to load thumb for " + file.FullName, ex);
         }
+
         return null;
       }
-      if (bytes == null) {
-        bytes = new byte[0];
-      }
+
+      if (bytes == null) bytes = new byte[0];
       OnCoverLazyLoaded?.Invoke(this, null);
       return bytes;
-    }
-
-    public void Dispose()
-    {
-      bytes = null;
     }
   }
 }

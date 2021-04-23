@@ -12,6 +12,7 @@ namespace NMaier.SimpleDlna.Server
     ImageJPEG,
     ImagePNG,
     SubtitleSRT,
+
     // The second subtitle mimme type is not used in code, but is advertised as available to DLNA clients
     SubtitleSRT2,
     Video3GPP,

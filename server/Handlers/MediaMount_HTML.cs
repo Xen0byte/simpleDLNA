@@ -23,23 +23,20 @@ namespace NMaier.SimpleDlna.Server
     private IResponse ProcessHtmlRequest(IMediaItem aItem)
     {
       var item = aItem as IMediaFolder;
-      if (item == null) {
-        throw new HttpStatusException(HttpCode.NotFound);
-      }
+      if (item == null) throw new HttpStatusException(HttpCode.NotFound);
 
       var article = HtmlTools.CreateHtmlArticle(
         $"Folder: {item.Title}");
       var document = article.OwnerDocument;
-      if (document == null) {
-        throw new HttpStatusException(HttpCode.InternalError);
-      }
+      if (document == null) throw new HttpStatusException(HttpCode.InternalError);
 
       XmlNode e;
       var folders = document.EL(
         "ul",
         new AttributeCollection {{"class", "folders"}}
-        );
-      if (item.Parent != null) {
+      );
+      if (item.Parent != null)
+      {
         folders.AppendChild(e = document.EL("li"));
         e.AppendChild(document.EL(
           "a",
@@ -49,9 +46,11 @@ namespace NMaier.SimpleDlna.Server
             {"class", "parent"}
           },
           "Parent"
-                        ));
+        ));
       }
-      foreach (var i in item.ChildFolders) {
+
+      foreach (var i in item.ChildFolders)
+      {
         folders.AppendChild(e = document.EL("li"));
         e.AppendChild(document.EL(
           "a",
@@ -61,12 +60,14 @@ namespace NMaier.SimpleDlna.Server
           },
           $"{i.Title} ({i.FullChildCount})"));
       }
+
       article.AppendChild(folders);
 
       XmlNode items;
       article.AppendChild(items = document.EL(
         "ul", new AttributeCollection {{"class", "items"}}));
-      foreach (var i in item.ChildItems) {
+      foreach (var i in item.ChildItems)
+      {
         items.AppendChild(e = document.EL("li"));
         var link = document.EL(
           "a",
@@ -76,7 +77,7 @@ namespace NMaier.SimpleDlna.Server
               "href", $"{Prefix}file/{i.Id}/{i.Title}.{DlnaMaps.Dlna2Ext[i.Type][0]}"
             }
           }
-          );
+        );
         var details = document.EL("section");
         link.AppendChild(details);
         e.AppendChild(link);
@@ -85,7 +86,7 @@ namespace NMaier.SimpleDlna.Server
           "h3", new AttributeCollection {{"title", i.Title}}, i.Title));
 
         var props = i.Properties;
-        if (props.ContainsKey("HasCover")) {
+        if (props.ContainsKey("HasCover"))
           details.AppendChild(document.EL(
             "img",
             new AttributeCollection
@@ -96,27 +97,26 @@ namespace NMaier.SimpleDlna.Server
                 "src", $"{Prefix}cover/{i.Id}/{i.Title}.{DlnaMaps.Dlna2Ext[i.Type][0]}"
               }
             }));
-        }
 
         var table = document.EL("table");
-        foreach (var p in htmlItemProperties) {
+        foreach (var p in htmlItemProperties)
+        {
           string v;
-          if (props.TryGetValue(p, out v)) {
+          if (props.TryGetValue(p, out v))
+          {
             table.AppendChild(e = document.EL("tr"));
             e.AppendChild(document.EL("th", p));
             e.AppendChild(document.EL("td", v));
           }
         }
-        if (table.ChildNodes.Count != 0) {
-          details.AppendChild(table);
-        }
+
+        if (table.ChildNodes.Count != 0) details.AppendChild(table);
 
         string description;
-        if (props.TryGetValue("Description", out description)) {
+        if (props.TryGetValue("Description", out description))
           link.AppendChild(document.EL(
             "p", new AttributeCollection {{"class", "desc"}},
             description));
-        }
       }
 
       return new StringResponse(HttpCode.Ok, document.OuterXml);

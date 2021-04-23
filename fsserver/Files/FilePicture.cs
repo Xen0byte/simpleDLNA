@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TagLib;
 
 namespace NMaier.SimpleDlna.FileMediaServer.Files
 {
@@ -18,25 +12,29 @@ namespace NMaier.SimpleDlna.FileMediaServer.Files
       PictureFile = source;
     }
 
-    public string MimeType {
-      get { return "image/jpeg"; }
+    public string MimeType
+    {
+      get => "image/jpeg";
       set { }
     }
+
     public PictureType Type
     {
-      get { return PictureType.FrontCover; }
+      get => PictureType.FrontCover;
       set { }
     }
-    public string Description {
-      get { return "thumbnail"; }
+
+    public string Description
+    {
+      get => "thumbnail";
       set { }
     }
-    public ByteVector Data {
-      get {
-        if (fileContent == null)
-        {
-          fileContent = System.IO.File.ReadAllBytes(PictureFile.FullName);
-        }
+
+    public ByteVector Data
+    {
+      get
+      {
+        if (fileContent == null) fileContent = File.ReadAllBytes(PictureFile.FullName);
         return new ByteVector(fileContent);
       }
       set { }

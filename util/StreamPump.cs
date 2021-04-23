@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using log4net;
 
 namespace NMaier.SimpleDlna.Utilities
 {
@@ -30,51 +29,63 @@ namespace NMaier.SimpleDlna.Utilities
     private void Finish(StreamPumpResult result, StreamPumpCallback callback)
     {
       callback?.BeginInvoke(this, result, callback.EndInvoke, null);
-      try {
+      try
+      {
         sem.Release();
       }
-      catch (ObjectDisposedException) {
+      catch (ObjectDisposedException)
+      {
         // ignore
       }
-      catch (Exception ex) {
-        LogManager.GetLogger(typeof (StreamPump)).Error(ex.Message, ex);
+      catch (Exception ex)
+      {
+        LogManager.GetLogger(typeof(StreamPump)).Error(ex.Message, ex);
       }
     }
 
     public void Pump(StreamPumpCallback callback)
     {
-      try {
+      try
+      {
         Input.BeginRead(buffer, 0, buffer.Length, readResult =>
         {
-          try {
+          try
+          {
             var read = Input.EndRead(readResult);
-            if (read <= 0) {
+            if (read <= 0)
+            {
               Finish(StreamPumpResult.Delivered, callback);
               return;
             }
 
-            try {
+            try
+            {
               Output.BeginWrite(buffer, 0, read, writeResult =>
               {
-                try {
+                try
+                {
                   Output.EndWrite(writeResult);
                   Pump(callback);
                 }
-                catch (Exception) {
+                catch (Exception)
+                {
                   Finish(StreamPumpResult.Aborted, callback);
                 }
               }, null);
             }
-            catch (Exception) {
+            catch (Exception)
+            {
               Finish(StreamPumpResult.Aborted, callback);
             }
           }
-          catch (Exception) {
+          catch (Exception)
+          {
             Finish(StreamPumpResult.Aborted, callback);
           }
         }, null);
       }
-      catch (Exception) {
+      catch (Exception)
+      {
         Finish(StreamPumpResult.Aborted, callback);
       }
     }

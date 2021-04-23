@@ -16,13 +16,14 @@ namespace NMaier.SimpleDlna.GUI
 
     public StartupUtilities(StartupUserScope userScope)
     {
-      switch (userScope) {
-      default:
-        appKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-        break;
-      case StartupUserScope.AllUsers:
-        appKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-        break;
+      switch (userScope)
+      {
+        default:
+          appKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+          break;
+        case StartupUserScope.AllUsers:
+          appKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+          break;
       }
     }
 
@@ -59,10 +60,7 @@ namespace NMaier.SimpleDlna.GUI
     public void InstallAutoRun(string name, string path)
     {
       // Wrap the path in quotes if it contains a space
-      if (path.Contains(" ") && !path.StartsWith("\""))
-      {
-        path = "\"" + path + "\"";
-      }
+      if (path.Contains(" ") && !path.StartsWith("\"")) path = "\"" + path + "\"";
       appKey.SetValue(name, path);
     }
 

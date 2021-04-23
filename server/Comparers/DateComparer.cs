@@ -12,12 +12,12 @@ namespace NMaier.SimpleDlna.Server.Comparers
     {
       var xm = x as IMetaInfo;
       var ym = y as IMetaInfo;
-      if (xm != null && ym != null) {
+      if (xm != null && ym != null)
+      {
         var rv = xm.InfoDate.CompareTo(ym.InfoDate);
-        if (rv != 0) {
-          return rv;
-        }
+        if (rv != 0) return rv;
       }
+
       return base.Compare(x, y);
     }
   }

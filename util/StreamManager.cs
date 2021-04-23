@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using Microsoft.IO;
 
 namespace NMaier.SimpleDlna.Utilities
 {

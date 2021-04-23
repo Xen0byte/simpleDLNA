@@ -1,29 +1,15 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NMaier.SimpleDlna.Utilities
 {
   public static class MKVTools
   {
-    private static string mkvDirectory = null;
+    public const int NoThumbnail = -1;
+    private static string mkvDirectory;
     private static string mkvMergeExecutable;
     private static string mkvExtractExe;
-    public static bool Loaded = false;
-
-    private enum AttachmentPriority
-    {
-      LargeLandscape = 0,
-      LargePortrait = 1,
-      SmallLandscape = 2,
-      SmallPortrait = 3
-    }
-
-    public const int NoThumbnail = -1;
+    public static bool Loaded;
 
     public static void Initialise(string mkvFolder)
     {
@@ -39,17 +25,12 @@ namespace NMaier.SimpleDlna.Utilities
       mkvMergeExecutable = Path.Combine(mkvFolder, "mkvmerge.exe");
       mkvExtractExe = Path.Combine(mkvFolder, "mkvextract.exe");
 
-      if (File.Exists(mkvMergeExecutable) && File.Exists(mkvExtractExe))
-            {
-        Loaded = true;
-            }
-
+      if (File.Exists(mkvMergeExecutable) && File.Exists(mkvExtractExe)) Loaded = true;
     }
 
     public static int FindThumbnail(string mkvFile)
     {
       if (!string.IsNullOrEmpty(mkvDirectory))
-      {
         using (var p = new Process())
         {
           var sti = p.StartInfo;
@@ -66,14 +47,8 @@ namespace NMaier.SimpleDlna.Utilities
               p.StandardOutput.BaseStream, reader.BaseStream, 4096))
             {
               pump.Pump(null);
-              if (!p.WaitForExit(3000))
-              {
-                throw new NotSupportedException("mkvtools timed out");
-              }
-              if (!pump.Wait(1000))
-              {
-                throw new NotSupportedException("mkvtools pump timed out");
-              }
+              if (!p.WaitForExit(3000)) throw new NotSupportedException("mkvtools timed out");
+              if (!pump.Wait(1000)) throw new NotSupportedException("mkvtools pump timed out");
               reader.BaseStream.Seek(0, SeekOrigin.Begin);
 
               var output = reader.ReadToEnd();
@@ -82,12 +57,11 @@ namespace NMaier.SimpleDlna.Utilities
               var idxOrder = 4;
               var matchedIndex = NoThumbnail;
               foreach (var line in outLines)
-              {
                 if (line.StartsWith("Attachment") && line.Contains("cover"))
                 {
                   // Get the attachment index and the type
                   var idPos = line.IndexOf("ID");
-                  int idx = int.Parse(line.Substring(idPos + 3, line.IndexOf(":", idPos) - idPos - 3));
+                  var idx = int.Parse(line.Substring(idPos + 3, line.IndexOf(":", idPos) - idPos - 3));
                   var namePos = line.IndexOf("file name");
                   var newIndex = idxOrder;
                   var coverName = line.Substring(namePos + 11, line.IndexOf("'", namePos + 11) - namePos - 11);
@@ -95,22 +69,19 @@ namespace NMaier.SimpleDlna.Utilities
                   {
                     case "cover_land.jpg":
                     case "cover_land.png":
-                      newIndex = (int)AttachmentPriority.LargeLandscape;
+                      newIndex = (int) AttachmentPriority.LargeLandscape;
                       break;
                     case "cover.jpg":
                     case "cover.png":
-                      newIndex = (int)AttachmentPriority.LargePortrait;
+                      newIndex = (int) AttachmentPriority.LargePortrait;
                       break;
                     case "small_cover_land.jpg":
                     case "small_cover_land.png":
-                      newIndex = (int)AttachmentPriority.SmallLandscape;
+                      newIndex = (int) AttachmentPriority.SmallLandscape;
                       break;
                     case "small_cover.jpg":
                     case "small_cover.png":
-                      newIndex = (int)AttachmentPriority.SmallPortrait;
-                      break;
-                    default:
-                      // Unknown attachment
+                      newIndex = (int) AttachmentPriority.SmallPortrait;
                       break;
                   }
 
@@ -119,19 +90,14 @@ namespace NMaier.SimpleDlna.Utilities
                     matchedIndex = idx;
                     idxOrder = newIndex;
                   }
-
-
-
                 }
-              }
+
               return matchedIndex;
             }
-
           }
         }
-      }
-      return NoThumbnail;
 
+      return NoThumbnail;
     }
 
     public static MemoryStream ExtractThumbnail(string mkvFile, int index)
@@ -155,33 +121,36 @@ namespace NMaier.SimpleDlna.Utilities
               p.StandardOutput.BaseStream, reader.BaseStream, 4096))
             {
               pump.Pump(null);
-              if (!p.WaitForExit(3000))
-              {
-                throw new NotSupportedException("mkvtools timed out");
-              }
-              if (!pump.Wait(1000))
-              {
-                throw new NotSupportedException("mkvtools pump timed out");
-              }
+              if (!p.WaitForExit(3000)) throw new NotSupportedException("mkvtools timed out");
+              if (!pump.Wait(1000)) throw new NotSupportedException("mkvtools pump timed out");
               reader.BaseStream.Seek(0, SeekOrigin.Begin);
 
               var output = reader.ReadToEnd();
               if (output.Contains("is written to"))
               {
-                MemoryStream fileContents = new MemoryStream();
-                using (FileStream file = new FileStream(tempFile, FileMode.Open, FileAccess.Read))
+                var fileContents = new MemoryStream();
+                using (var file = new FileStream(tempFile, FileMode.Open, FileAccess.Read))
                 {
                   file.CopyTo(fileContents);
                 }
+
                 File.Delete(tempFile);
                 return fileContents;
               }
             }
-            }
           }
-          }
+        }
+      }
+
       return null;
     }
-  }
 
+    private enum AttachmentPriority
+    {
+      LargeLandscape = 0,
+      LargePortrait = 1,
+      SmallLandscape = 2,
+      SmallPortrait = 3
+    }
+  }
 }
