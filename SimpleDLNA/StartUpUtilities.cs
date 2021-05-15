@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Forms;
 using Microsoft.Win32;
 
 namespace NMaier.SimpleDlna.GUI
@@ -16,13 +15,14 @@ namespace NMaier.SimpleDlna.GUI
 
     public StartupUtilities(StartupUserScope userScope)
     {
-      switch (userScope) {
-      default:
-        appKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-        break;
-      case StartupUserScope.AllUsers:
-        appKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-        break;
+      switch (userScope)
+      {
+        default:
+          appKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+          break;
+        case StartupUserScope.AllUsers:
+          appKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+          break;
       }
     }
 

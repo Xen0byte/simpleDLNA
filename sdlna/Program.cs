@@ -1,10 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
-using log4net;
-using NMaier.GetOptNet;
 using NMaier.SimpleDlna.FileMediaServer;
 using NMaier.SimpleDlna.Properties;
 using NMaier.SimpleDlna.Server;
@@ -24,26 +21,29 @@ namespace NMaier.SimpleDlna
     private static void CancelKeyPressed(object sender,
       ConsoleCancelEventArgs e)
     {
-      if (cancelHitCount++ == 3) {
-        LogManager.GetLogger(typeof (Program)).Fatal(
+      if (cancelHitCount++ == 3)
+      {
+        LogManager.GetLogger(typeof(Program)).Fatal(
           "Emergency exit commencing");
         return;
       }
+
       e.Cancel = true;
       blockEvent.Set();
-      LogManager.GetLogger(typeof (Program)).Info("Shutdown requested");
+      LogManager.GetLogger(typeof(Program)).Info("Shutdown requested");
       Console.Title = "SimpleDLNA - shutting down ...";
     }
 
     private static void ListOrders()
     {
       var items = from v in ComparerRepository.ListItems()
-                  orderby v.Key
-                  select v.Value;
+        orderby v.Key
+        select v.Value;
       Console.WriteLine("Available orders:");
       Console.WriteLine("----------------");
       Console.WriteLine();
-      foreach (var i in items) {
+      foreach (var i in items)
+      {
         Console.WriteLine("  - " + i);
         Console.WriteLine();
       }
@@ -52,12 +52,13 @@ namespace NMaier.SimpleDlna
     private static void ListViews()
     {
       var items = from v in ViewRepository.ListItems()
-                  orderby v.Key
-                  select v.Value;
+        orderby v.Key
+        select v.Value;
       Console.WriteLine("Available views:");
       Console.WriteLine("----------------");
       Console.WriteLine();
-      foreach (var i in items) {
+      foreach (var i in items)
+      {
         Console.WriteLine("  - " + i);
         Console.WriteLine();
       }
@@ -67,64 +68,74 @@ namespace NMaier.SimpleDlna
     {
       Console.WriteLine();
       var options = new Options();
-      try {
+      try
+      {
         Console.TreatControlCAsInput = false;
         Console.CancelKeyPress += CancelKeyPressed;
 
         options.Parse(args);
-        if (options.ShowHelp) {
+        if (options.ShowHelp)
+        {
           options.PrintUsage();
           return;
         }
-        if (options.ShowVersion) {
+
+        if (options.ShowVersion)
+        {
           ShowVersion();
           return;
         }
-        if (options.ShowLicense) {
+
+        if (options.ShowLicense)
+        {
           ShowLicense();
           return;
         }
-        if (options.ListViews) {
+
+        if (options.ListViews)
+        {
           ListViews();
           return;
         }
-        if (options.ListOrders) {
+
+        if (options.ListOrders)
+        {
           ListOrders();
           return;
         }
-        if (options.Directories.Length == 0) {
-          throw new GetOptException("No directories specified");
-        }
+
+        if (options.Directories.Length == 0) throw new GetOptException("No directories specified");
 
         options.SetupLogging();
 
-        using (new ProgramIcon()) {
+        using (new ProgramIcon())
+        {
           var server = new HttpServer(options.Port);
-          try {
-            using (var authorizer = new HttpAuthorizer(server)) {
-              if (options.Ips.Length != 0) {
-                authorizer.AddMethod(new IPAddressAuthorizer(options.Ips));
-              }
-              if (options.Macs.Length != 0) {
-                authorizer.AddMethod(new MacAuthorizer(options.Macs));
-              }
-              if (options.UserAgents.Length != 0) {
+          try
+          {
+            using (var authorizer = new HttpAuthorizer(server))
+            {
+              if (options.Ips.Length != 0) authorizer.AddMethod(new IPAddressAuthorizer(options.Ips));
+              if (options.Macs.Length != 0) authorizer.AddMethod(new MacAuthorizer(options.Macs));
+              if (options.UserAgents.Length != 0)
                 authorizer.AddMethod(
                   new UserAgentAuthorizer(options.UserAgents));
-              }
 
               Console.Title = "SimpleDLNA - starting ...";
 
               var types = options.Types[0];
-              foreach (var t in options.Types) {
+              foreach (var t in options.Types)
+              {
                 types = types | t;
                 server.InfoFormat("Enabled type {0}", t);
               }
 
               var friendlyName = "sdlna";
 
-              if (options.Seperate) {
-                foreach (var d in options.Directories) {
+              if (options.Seperate)
+              {
+                foreach (var d in options.Directories)
+                {
                   server.InfoFormat("Mounting FileServer for {0}", d.FullName);
                   var fs = SetupFileServer(
                     options, types, new[] {d});
@@ -133,15 +144,15 @@ namespace NMaier.SimpleDlna
                   server.NoticeFormat("{0} mounted", d.FullName);
                 }
               }
-              else {
+              else
+              {
                 server.InfoFormat(
                   "Mounting FileServer for {0} ({1})",
                   options.Directories[0], options.Directories.Length);
-				if (!options.Rescanning) {
-				  server.InfoFormat("Rescanning disabled");
-				} else {
-				  server.InfoFormat("Rescanning enabled");
-				}
+                if (!options.Rescanning)
+                  server.InfoFormat("Rescanning disabled");
+                else
+                  server.InfoFormat("Rescanning enabled");
                 var fs = SetupFileServer(options, types, options.Directories);
                 friendlyName = fs.FriendlyName;
                 server.RegisterMediaServer(fs);
@@ -155,12 +166,14 @@ namespace NMaier.SimpleDlna
               Run(server);
             }
           }
-          finally {
+          finally
+          {
             server.Dispose();
           }
         }
       }
-      catch (GetOptException ex) {
+      catch (GetOptException ex)
+      {
         Console.Error.WriteLine("Error: {0}\n\n", ex.Message);
         options.PrintUsage();
       }
@@ -186,31 +199,30 @@ namespace NMaier.SimpleDlna
     {
       var ids = new Identifiers(
         ComparerRepository.Lookup(options.Order), options.DescendingOrder);
-      foreach (var v in options.Views) {
-        try {
+      foreach (var v in options.Views)
+        try
+        {
           ids.AddView(v);
         }
-        catch (RepositoryLookupException) {
+        catch (RepositoryLookupException)
+        {
           throw new GetOptException("Invalid view " + v);
         }
-      }
+
       var fs = new FileServer(types, ids, d);
-      try {
-        if (!string.IsNullOrEmpty(options.FriendlyName)) {
-          fs.FriendlyName = options.FriendlyName;
-        }
-        if (options.CacheFile != null) {
-          fs.SetCacheFile(options.CacheFile);
-        }
+      try
+      {
+        if (!string.IsNullOrEmpty(options.FriendlyName)) fs.FriendlyName = options.FriendlyName;
+        if (options.CacheFile != null) fs.SetCacheFile(options.CacheFile);
         fs.Load();
-        if (!options.Rescanning) {
-          fs.Rescanning = false;
-        }
+        if (!options.Rescanning) fs.Rescanning = false;
       }
-      catch (Exception) {
+      catch (Exception)
+      {
         fs.Dispose();
         throw;
       }
+
       return fs;
     }
 

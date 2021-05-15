@@ -37,10 +37,7 @@ namespace NMaier.SimpleDlna.Server
 
     public IEnumerable<IMediaResource> AllItems
     {
-      get {
-        return Folders.SelectMany(f => ((VirtualFolder)f).AllItems).
-          Concat(Resources);
-      }
+      get { return Folders.SelectMany(f => ((VirtualFolder) f).AllItems).Concat(Resources); }
     }
 
     public string Name { get; set; }
@@ -59,25 +56,28 @@ namespace NMaier.SimpleDlna.Server
 
     public virtual string Path
     {
-      get {
-        if (!string.IsNullOrEmpty(path)) {
-          return path;
-        }
+      get
+      {
+        if (!string.IsNullOrEmpty(path)) return path;
         var p = string.IsNullOrEmpty(Id) ? Name : Id;
-        if (Parent != null) {
+        if (Parent != null)
+        {
           var vp = Parent as VirtualFolder;
           path = $"{(vp != null ? vp.Path : Parent.Id)}/v:{p}";
         }
-        else {
+        else
+        {
           path = p;
         }
+
         return path;
       }
     }
 
     public IHeaders Properties
     {
-      get {
+      get
+      {
         var rv = new RawHeaders {{"Title", Title}};
         return rv;
       }
@@ -92,32 +92,22 @@ namespace NMaier.SimpleDlna.Server
 
     public virtual void Cleanup()
     {
-      foreach (var m in merged) {
-        m.Cleanup();
-      }
-      foreach (var f in Folders.ToList()) {
-        f.Cleanup();
-      }
-      if (ChildCount != 0) {
-        return;
-      }
+      foreach (var m in merged) m.Cleanup();
+      foreach (var f in Folders.ToList()) f.Cleanup();
+      if (ChildCount != 0) return;
       var vp = Parent as VirtualFolder;
       vp?.ReleaseFolder(this);
     }
 
     public int CompareTo(IMediaItem other)
     {
-      if (other == null) {
-        return 1;
-      }
+      if (other == null) return 1;
       return comparer.Compare(Title, other.Title);
     }
 
     public bool Equals(IMediaItem other)
     {
-      if (other == null) {
-        throw new ArgumentNullException(nameof(other));
-      }
+      if (other == null) throw new ArgumentNullException(nameof(other));
       return Title.Equals(other.Title);
     }
 
@@ -128,12 +118,11 @@ namespace NMaier.SimpleDlna.Server
 
     public void Sort(IComparer<IMediaItem> sortComparer, bool descending)
     {
-      foreach (var f in Folders) {
-        f.Sort(sortComparer, descending);
-      }
+      foreach (var f in Folders) f.Sort(sortComparer, @descending);
       Folders.Sort(sortComparer);
       Resources.Sort(sortComparer);
-      if (descending) {
+      if (descending)
+      {
         Folders.Reverse();
         Resources.Reverse();
       }
@@ -146,35 +135,30 @@ namespace NMaier.SimpleDlna.Server
 
     public void AdoptFolder(IMediaFolder folder)
     {
-      if (folder == null) {
-        throw new ArgumentNullException(nameof(folder));
-      }
+      if (folder == null) throw new ArgumentNullException(nameof(folder));
       var vf = folder.Parent as VirtualFolder;
       vf?.ReleaseFolder(folder);
       folder.Parent = this;
-      if (!Folders.Contains(folder)) {
-        Folders.Add(folder);
-      }
+      if (!Folders.Contains(folder)) Folders.Add(folder);
     }
 
     public void Merge(IMediaFolder folder)
     {
-      if (folder == null) {
-        throw new ArgumentNullException(nameof(folder));
-      }
+      if (folder == null) throw new ArgumentNullException(nameof(folder));
       merged.Add(folder);
-      foreach (var item in folder.ChildItems) {
-        AddResource(item);
-      }
-      foreach (var cf in folder.ChildFolders) {
+      foreach (var item in folder.ChildItems) AddResource(item);
+      foreach (var cf in folder.ChildFolders)
+      {
         var ownFolder = (from f in Folders
-                         where f is VirtualFolder && f.Title == cf.Title
-                         select f as VirtualFolder
+            where f is VirtualFolder && f.Title == cf.Title
+            select f as VirtualFolder
           ).FirstOrDefault();
-        if (ownFolder == null) {
+        if (ownFolder == null)
+        {
           ownFolder = new VirtualFolder(this, cf.Title, cf.Id);
           AdoptFolder(ownFolder);
         }
+
         ownFolder.Merge(cf);
       }
     }

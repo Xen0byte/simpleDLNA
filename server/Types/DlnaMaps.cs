@@ -12,7 +12,7 @@ namespace NMaier.SimpleDlna.Server
       DlnaFlags.ConnectionStall |
       DlnaFlags.ByteBasedSeek |
       DlnaFlags.DlnaV15
-      );
+    );
 
     internal static readonly string DefaultInteractive = FlagsToString(
       DlnaFlags.InteractiveTransferMode |
@@ -20,58 +20,58 @@ namespace NMaier.SimpleDlna.Server
       DlnaFlags.ConnectionStall |
       DlnaFlags.ByteBasedSeek |
       DlnaFlags.DlnaV15
-      );
+    );
 
     private static readonly string[] ext3GPP =
-    {"3gp", "3gpp"};
+      {"3gp", "3gpp"};
 
     private static readonly string[] extAAC =
-    {"aac", "mp4a", "m4a"};
+      {"aac", "mp4a", "m4a"};
 
     private static readonly string[] extAVC =
-    {"avc", "mp4", "m4v", "mov"};
+      {"avc", "mp4", "m4v", "mov"};
 
     private static readonly string[] extAVI =
-    {"avi", "divx", "xvid"};
+      {"avi", "divx", "xvid"};
 
     private static readonly string[] extFLV =
-    {"flv"};
+      {"flv"};
 
     private static readonly string[] extGIF =
-    {"gif"};
+      {"gif"};
 
     private static readonly string[] extJPEG =
-    {"jpg", "jpe", "jpeg", "jif", "jfif"};
+      {"jpg", "jpe", "jpeg", "jif", "jfif"};
 
     private static readonly string[] extMKV =
-    {"mkv", "matroska", "mk3d", "webm"};
+      {"mkv", "matroska", "mk3d", "webm"};
 
     private static readonly string[] extMP3 =
-    {"mp3", "mp3p", "mp3x", "mp3a", "mpa"};
+      {"mp3", "mp3p", "mp3x", "mp3a", "mpa"};
 
     private static readonly string[] extMP2 =
-    {"mp2"};
+      {"mp2"};
 
     private static readonly string[] extMPEG =
-    {"mpg", "mpe", "mpeg", "mpg2", "mpeg2", "ts", "vob", "m2v"};
+      {"mpg", "mpe", "mpeg", "mpg2", "mpeg2", "ts", "vob", "m2v"};
 
     private static readonly string[] extOGV =
-    {"ogm", "ogv"};
+      {"ogm", "ogv"};
 
     private static readonly string[] extPNG =
-    {"png"};
+      {"png"};
 
     private static readonly string[] extWAV =
-    {"wav"};
+      {"wav"};
 
     private static readonly string[] extVORBIS =
-    {"ogg", "oga"};
+      {"ogg", "oga"};
 
     private static readonly string[] extWMV =
-    {"wmv", "asf", "wma", "wmf"};
+      {"wmv", "asf", "wma", "wmf"};
 
     private static readonly string[] extFLAC =
-    {"flac"};
+      {"flac"};
 
     public static readonly Dictionary<DlnaMime, List<string>> Dlna2Ext =
       new Dictionary<DlnaMime, List<string>>();
@@ -296,46 +296,45 @@ namespace NMaier.SimpleDlna.Server
       var extToDLNA = new[]
       {
         new
-        {t = DlnaMime.AudioAAC, e = extAAC},
+          {t = DlnaMime.AudioAAC, e = extAAC},
         new
-        {t = DlnaMime.AudioFLAC, e = extFLAC},
+          {t = DlnaMime.AudioFLAC, e = extFLAC},
         new
-        {t = DlnaMime.AudioMP2, e = extMP2},
+          {t = DlnaMime.AudioMP2, e = extMP2},
         new
-        {t = DlnaMime.AudioMP3, e = extMP3},
+          {t = DlnaMime.AudioMP3, e = extMP3},
         new
-        {t = DlnaMime.AudioWAV, e = extWAV},
+          {t = DlnaMime.AudioWAV, e = extWAV},
         new
-        {t = DlnaMime.AudioVORBIS, e = extVORBIS},
+          {t = DlnaMime.AudioVORBIS, e = extVORBIS},
         new
-        {t = DlnaMime.ImageGIF, e = extGIF},
+          {t = DlnaMime.ImageGIF, e = extGIF},
         new
-        {t = DlnaMime.ImageJPEG, e = extJPEG},
+          {t = DlnaMime.ImageJPEG, e = extJPEG},
         new
-        {t = DlnaMime.ImagePNG, e = extPNG},
+          {t = DlnaMime.ImagePNG, e = extPNG},
         new
-        {t = DlnaMime.Video3GPP, e = ext3GPP},
+          {t = DlnaMime.Video3GPP, e = ext3GPP},
         new
-        {t = DlnaMime.VideoAVC, e = extAVC},
+          {t = DlnaMime.VideoAVC, e = extAVC},
         new
-        {t = DlnaMime.VideoAVI, e = extAVI},
+          {t = DlnaMime.VideoAVI, e = extAVI},
         new
-        {t = DlnaMime.VideoFLV, e = extFLV},
+          {t = DlnaMime.VideoFLV, e = extFLV},
         new
-        {t = DlnaMime.VideoMKV, e = extMKV},
+          {t = DlnaMime.VideoMKV, e = extMKV},
         new
-        {t = DlnaMime.VideoMPEG, e = extMPEG},
+          {t = DlnaMime.VideoMPEG, e = extMPEG},
         new
-        {t = DlnaMime.VideoOGV, e = extOGV},
+          {t = DlnaMime.VideoOGV, e = extOGV},
         new
-        {t = DlnaMime.VideoWMV, e = extWMV}
+          {t = DlnaMime.VideoWMV, e = extWMV}
       };
 
-      foreach (var i in extToDLNA) {
+      foreach (var i in extToDLNA)
+      {
         var t = i.t;
-        foreach (var e in i.e) {
-          Ext2Dlna.Add(e.ToUpperInvariant(), t);
-        }
+        foreach (var e in i.e) Ext2Dlna.Add(e.ToUpperInvariant(), t);
         Dlna2Ext.Add(i.t, new List<string>(i.e));
       }
 
@@ -353,34 +352,36 @@ namespace NMaier.SimpleDlna.Server
     private static string GenerateProtocolInfo()
     {
       var pns = (from p in AllPN
-                 let mime = Mime[p.Key]
-                 from pn in p.Value
-                 select
-                   string.Format("http-get:*:{1}:DLNA.ORG_PN={0};DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS={2}", pn,
-                                 mime, DefaultStreaming)).ToList();
+        let mime = Mime[p.Key]
+        from pn in p.Value
+        select
+          string.Format("http-get:*:{1}:DLNA.ORG_PN={0};DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS={2}", pn,
+            mime, DefaultStreaming)).ToList();
       return string.Join(",", pns);
     }
 
     private static void InitMedia(string[][] k, DlnaMediaTypes t)
     {
-      foreach (var i in k) {
+      foreach (var i in k)
+      {
         var e = (from ext in i
-                 select ext.ToUpperInvariant()).ToList();
-        try {
+          select ext.ToUpperInvariant()).ToList();
+        try
+        {
           Media2Ext.Add(t, e);
         }
-        catch (ArgumentException) {
+        catch (ArgumentException)
+        {
           Media2Ext[t].AddRange(e);
         }
-        foreach (var ext in e) {
-          Ext2Media.Add(ext.ToUpperInvariant(), t);
-        }
+
+        foreach (var ext in e) Ext2Media.Add(ext.ToUpperInvariant(), t);
       }
     }
 
     internal static string FlagsToString(DlnaFlags flags)
     {
-      return $"{(ulong)flags:X8}{0:D24}";
+      return $"{(ulong) flags:X8}{0:D24}";
     }
 
     public static Dictionary<DlnaMime, string> GenerateMainPN()

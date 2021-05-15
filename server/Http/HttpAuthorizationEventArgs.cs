@@ -14,8 +14,8 @@ namespace NMaier.SimpleDlna.Server
 
     public bool Cancel { get; set; }
 
-    public IHeaders Headers { get; private set; }
+    public IHeaders Headers { get; }
 
-    public IPEndPoint RemoteEndpoint { get; private set; }
+    public IPEndPoint RemoteEndpoint { get; }
   }
 }

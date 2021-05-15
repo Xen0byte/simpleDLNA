@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace NMaier.SimpleDlna.Utilities
@@ -14,15 +13,12 @@ namespace NMaier.SimpleDlna.Utilities
 
     public override bool CanWrite => false;
 
-    public override long Length
-    {
-      get { throw new NotSupportedException(); }
-    }
+    public override long Length => throw new NotSupportedException();
 
     public override long Position
     {
-      get { throw new NotSupportedException(); }
-      set { throw new NotSupportedException(); }
+      get => throw new NotSupportedException();
+      set => throw new NotSupportedException();
     }
 
     public void AddStream(Stream stream)
@@ -32,10 +28,12 @@ namespace NMaier.SimpleDlna.Utilities
 
     public override void Close()
     {
-      foreach (var stream in streams) {
+      foreach (var stream in streams)
+      {
         stream.Close();
         stream.Dispose();
       }
+
       streams.Clear();
       base.Close();
     }
@@ -46,19 +44,21 @@ namespace NMaier.SimpleDlna.Utilities
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-      if (streams.Count == 0) {
-        return 0;
-      }
+      if (streams.Count == 0) return 0;
 
       var read = streams.Peek().Read(buffer, offset, count);
-      if (read < count) {
+      if (read < count)
+      {
         var sndRead = streams.Peek().Read(buffer, offset + read, count - read);
-        if (sndRead <= 0) {
+        if (sndRead <= 0)
+        {
           streams.Dequeue().Dispose();
           return read + Read(buffer, offset + read, count - read);
         }
+
         read += sndRead;
       }
+
       return read;
     }
 

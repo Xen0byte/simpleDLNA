@@ -15,7 +15,7 @@ namespace NMaier.SimpleDlna.Server
         HttpCode.Ok,
         isPNG ? "image/png" : "image/jpeg",
         resource
-        );
+      );
     }
   }
 }

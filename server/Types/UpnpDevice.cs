@@ -23,12 +23,10 @@ namespace NMaier.SimpleDlna.Server
       Descriptor = descriptor;
       Address = address;
 
-      if (Type.StartsWith("uuid:", StringComparison.Ordinal)) {
+      if (Type.StartsWith("uuid:", StringComparison.Ordinal))
         USN = Type;
-      }
-      else {
+      else
         USN = $"uuid:{UUID}::{Type}";
-      }
     }
   }
 }

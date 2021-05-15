@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 
 namespace NMaier.SimpleDlna.GUI.Properties
 {
@@ -8,14 +7,17 @@ namespace NMaier.SimpleDlna.GUI.Properties
   {
     public Settings()
     {
-      try {
-        if (MustUpgrade) {
+      try
+      {
+        if (MustUpgrade)
+        {
           Upgrade();
           MustUpgrade = false;
           Save();
         }
       }
-      catch (Exception) {
+      catch (Exception)
+      {
       }
     }
 
@@ -23,14 +25,8 @@ namespace NMaier.SimpleDlna.GUI.Properties
     [DefaultSettingValue("")]
     public List<ServerDescription> Descriptors
     {
-      get
-      {
-        return this["Descriptors"] as List<ServerDescription>;
-      }
-      set
-      {
-        this["Descriptors"] = value;
-      }
+      get => this["Descriptors"] as List<ServerDescription>;
+      set => this["Descriptors"] = value;
     }
   }
 }

@@ -33,11 +33,10 @@ namespace NMaier.SimpleDlna.Server
 
     public string HeaderBlock
     {
-      get {
+      get
+      {
         var hb = new StringBuilder();
-        foreach (var h in this) {
-          hb.AppendFormat("{0}: {1}\r\n", h.Key, h.Value);
-        }
+        foreach (var h in this) hb.AppendFormat("{0}: {1}\r\n", h.Key, h.Value);
         return hb.ToString();
       }
     }
@@ -52,8 +51,8 @@ namespace NMaier.SimpleDlna.Server
 
     public string this[string key]
     {
-      get { return dict[Normalize(key)]; }
-      set { dict[Normalize(key)] = value; }
+      get => dict[Normalize(key)];
+      set => dict[Normalize(key)] = value;
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -115,13 +114,9 @@ namespace NMaier.SimpleDlna.Server
 
     private string Normalize(string header)
     {
-      if (!asIs) {
-        header = header.ToUpperInvariant();
-      }
+      if (!asIs) header = header.ToUpperInvariant();
       header = header.Trim();
-      if (!validator.IsMatch(header)) {
-        throw new ArgumentException("Invalid header: " + header);
-      }
+      if (!validator.IsMatch(header)) throw new ArgumentException("Invalid header: " + header);
       return header;
     }
 

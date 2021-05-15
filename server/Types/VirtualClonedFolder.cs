@@ -35,16 +35,16 @@
 
     private void CloneFolder(VirtualFolder parent, IMediaFolder folder)
     {
-      foreach (var f in folder.ChildFolders) {
+      foreach (var f in folder.ChildFolders)
+      {
         var vf = new VirtualFolder(parent, f.Title, f.Id);
         parent.AdoptFolder(vf);
         CloneFolder(vf, f);
       }
-      foreach (var i in folder.ChildItems) {
-        if ((types & i.MediaType) == i.MediaType) {
+
+      foreach (var i in folder.ChildItems)
+        if ((types & i.MediaType) == i.MediaType)
           parent.AddResource(i);
-        }
-      }
     }
 
     public override void Cleanup()

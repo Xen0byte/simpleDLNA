@@ -12,27 +12,22 @@ namespace NMaier.SimpleDlna.Server.Views
 
     public override string Name => "new";
 
+    public void SetParameters(ConfigParameters parameters)
+    {
+      if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+
+      foreach (var v in parameters.GetValuesForKey("date"))
+      {
+        DateTime min;
+        if (DateTime.TryParse(v, out min)) minDate = min;
+      }
+    }
+
     public override bool Allowed(IMediaResource res)
     {
       var i = res as IMetaInfo;
-      if (i == null) {
-        return false;
-      }
+      if (i == null) return false;
       return i.InfoDate >= minDate;
-    }
-
-    public void SetParameters(ConfigParameters parameters)
-    {
-      if (parameters == null) {
-        throw new ArgumentNullException(nameof(parameters));
-      }
-
-      foreach (var v in parameters.GetValuesForKey("date")) {
-        DateTime min;
-        if (DateTime.TryParse(v, out min)) {
-          minDate = min;
-        }
-      }
     }
   }
 }

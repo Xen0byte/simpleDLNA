@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Xml;
+﻿using System.Xml;
 using NMaier.SimpleDlna.Utilities;
 
 namespace NMaier.SimpleDlna.Server
@@ -8,7 +7,7 @@ namespace NMaier.SimpleDlna.Server
   {
     public static XmlElement CreateHtmlArticle(string title)
     {
-     // title += " – SimpleDLNA";
+      // title += " – SimpleDLNA";
 
       var document = new XmlDocument();
       document.AppendChild(document.CreateDocumentType(
@@ -42,24 +41,24 @@ namespace NMaier.SimpleDlna.Server
       footer.AppendChild(document.EL(
         "img",
         new AttributeCollection {{"src", "/icon/smallPNG"}}
-                           ));
+      ));
       footer.AppendChild(document.EL("h3",
-                                        "SimpleDLNA Media Server"));
-                                    // $"SimpleDLNA Media Server: sdlna/{Assembly.GetExecutingAssembly().GetName().Version.Major}.{Assembly.GetExecutingAssembly().GetName().Version.Minor}"));
-     /* footer.AppendChild(document.EL(
-        "p",
-        new AttributeCollection {{"class", "desc"}},
-        "A simple, zero-config DLNA media server, that you can just fire up and be done with it."
-                           ));
-      footer.AppendChild(document.EL(
-        "a",
-        new AttributeCollection
-        {
-          {"href", "https://github.com/nmaier/simpleDLNA/"}
-        },
-        "Fork me on GitHub")
-        );
-        */
+        "SimpleDLNA Media Server"));
+      // $"SimpleDLNA Media Server: sdlna/{Assembly.GetExecutingAssembly().GetName().Version.Major}.{Assembly.GetExecutingAssembly().GetName().Version.Minor}"));
+      /* footer.AppendChild(document.EL(
+         "p",
+         new AttributeCollection {{"class", "desc"}},
+         "A simple, zero-config DLNA media server, that you can just fire up and be done with it."
+                            ));
+       footer.AppendChild(document.EL(
+         "a",
+         new AttributeCollection
+         {
+           {"href", "https://github.com/nmaier/simpleDLNA/"}
+         },
+         "Fork me on GitHub")
+         );
+         */
       body.AppendChild(footer);
       return article;
     }

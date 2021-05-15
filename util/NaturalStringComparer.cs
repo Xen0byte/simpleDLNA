@@ -30,10 +30,12 @@ namespace NMaier.SimpleDlna.Utilities
 
     private static bool HasPlatformSupport()
     {
-      try {
+      try
+      {
         return SafeNativeMethods.StrCmpLogicalW("a", "b") != 0;
       }
-      catch (Exception) {
+      catch (Exception)
+      {
         return false;
       }
     }
@@ -41,79 +43,77 @@ namespace NMaier.SimpleDlna.Utilities
     private BaseSortPart[] Split(string str)
     {
       BaseSortPart[] rv;
-      lock (partsCache) {
-        if (partsCache.TryGetValue(str, out rv)) {
-          return rv;
-        }
+      lock (partsCache)
+      {
+        if (partsCache.TryGetValue(str, out rv)) return rv;
       }
 
       var parts = new List<BaseSortPart>();
       var num = false;
       var start = 0;
-      for (var i = 0; i < str.Length; ++i) {
+      for (var i = 0; i < str.Length; ++i)
+      {
         var c = str[i];
         var cnum = c >= '0' && c <= '9';
-        if (cnum == num) {
-          continue;
-        }
-        if (i != 0) {
+        if (cnum == num) continue;
+        if (i != 0)
+        {
           var p = str.Substring(start, i - start).Trim();
-          if (num) {
+          if (num)
+          {
             parts.Add(new NumericSortPart(p));
           }
-          else {
-            if (!string.IsNullOrWhiteSpace(p)) {
-              parts.Add(new StringSortPart(p, comparer));
-            }
+          else
+          {
+            if (!string.IsNullOrWhiteSpace(p)) parts.Add(new StringSortPart(p, comparer));
           }
         }
+
         num = cnum;
         start = i;
       }
+
       var pe = str.Substring(start).Trim();
-      if (!string.IsNullOrWhiteSpace(pe)) {
-        if (num) {
+      if (!string.IsNullOrWhiteSpace(pe))
+      {
+        if (num)
           parts.Add(new NumericSortPart(pe));
-        }
-        else {
+        else
           parts.Add(new StringSortPart(pe, comparer));
-        }
       }
 
       rv = parts.ToArray();
-      lock (partsCache) {
+      lock (partsCache)
+      {
         partsCache[str] = rv;
       }
+
       return rv;
     }
 
     public override int Compare(string x, string y)
     {
-      if (stemBase) {
+      if (stemBase)
+      {
         x = x.StemCompareBase();
         y = y.StemCompareBase();
       }
-      if (platformSupport) {
-        return SafeNativeMethods.StrCmpLogicalW(x, y);
-      }
-      if (x == y || InvariantCulture.Compare(x, y) == 0) {
-        return 0;
-      }
+
+      if (platformSupport) return SafeNativeMethods.StrCmpLogicalW(x, y);
+      if (x == y || InvariantCulture.Compare(x, y) == 0) return 0;
       var p1 = Split(x);
       var p2 = Split(y);
 
       int rv;
       var e = Math.Min(p1.Length, p2.Length);
-      for (var i = 0; i < e; ++i) {
+      for (var i = 0; i < e; ++i)
+      {
         rv = p1[i].CompareTo(p2[i]);
-        if (rv != 0) {
-          return rv;
-        }
+        if (rv != 0) return rv;
       }
+
       rv = p1.Length.CompareTo(p2.Length);
-      if (rv == 0) {
-        return comparer.Compare(x, y);
-      }
+      if (rv == 0) return comparer.Compare(x, y);
       return rv;
     }
 

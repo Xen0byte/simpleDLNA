@@ -108,8 +108,9 @@ namespace NMaier.SimpleDlna.FileMediaServer
     public void Dispose()
     {
       insert?.Dispose();
-      @select?.Dispose();
-      if (connection != null) {
+      select?.Dispose();
+      if (connection != null)
+      {
         vacuumer.Remove(connection);
         Sqlite.ClearPool(connection);
         connection.Dispose();
@@ -119,39 +120,45 @@ namespace NMaier.SimpleDlna.FileMediaServer
     private void OpenConnection(FileInfo storeFile,
       out IDbConnection newConnection)
     {
-      lock (globalLock) {
+      lock (globalLock)
+      {
         newConnection = Sqlite.GetDatabaseConnection(storeFile);
-        try {
-          using (var ver = newConnection.CreateCommand()) {
+        try
+        {
+          using (var ver = newConnection.CreateCommand())
+          {
             ver.CommandText = "PRAGMA user_version";
-            var currentVersion = (uint)(long)ver.ExecuteScalar();
-            if (!currentVersion.Equals(SCHEMA)) {
-              throw new IndexOutOfRangeException("SCHEMA");
-            }
+            var currentVersion = (uint) (long) ver.ExecuteScalar();
+            if (!currentVersion.Equals(SCHEMA)) throw new IndexOutOfRangeException("SCHEMA");
           }
         }
-        catch (Exception ex) {
+        catch (Exception ex)
+        {
           NoticeFormat(
             "Recreating database, schema update. ({0})",
             ex.Message
-            );
+          );
           Sqlite.ClearPool(newConnection);
           newConnection.Close();
           newConnection.Dispose();
           newConnection = null;
-          for (var i = 0; i < 10; ++i) {
-            try {
+          for (var i = 0; i < 10; ++i)
+            try
+            {
               GC.Collect();
               storeFile.Delete();
               break;
             }
-            catch (IOException) {
+            catch (IOException)
+            {
               Thread.Sleep(100);
             }
-          }
+
           newConnection = Sqlite.GetDatabaseConnection(storeFile);
         }
-        using (var pragma = connection.CreateCommand()) {
+
+        using (var pragma = connection.CreateCommand())
+        {
           pragma.CommandText = "PRAGMA journal_size_limt = 33554432";
           pragma.ExecuteNonQuery();
         }
@@ -160,38 +167,44 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     private void SetupDatabase()
     {
-      using (var transaction = connection.BeginTransaction()) {
-        using (var pragma = connection.CreateCommand()) {
+      using (var transaction = connection.BeginTransaction())
+      {
+        using (var pragma = connection.CreateCommand())
+        {
           pragma.CommandText = $"PRAGMA user_version = {SCHEMA}";
           pragma.ExecuteNonQuery();
           pragma.CommandText = "PRAGMA page_size = 8192";
           pragma.ExecuteNonQuery();
         }
-        using (var create = connection.CreateCommand()) {
+
+        using (var create = connection.CreateCommand())
+        {
           create.CommandText =
             "CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY ON CONFLICT REPLACE, size INT, time INT, data BINARY, cover BINARY)";
           create.ExecuteNonQuery();
         }
+
         transaction.Commit();
       }
     }
 
     internal bool HasCover(BaseFile file)
     {
-      if (connection == null) {
-        return false;
-      }
+      if (connection == null) return false;
 
       var info = file.Item;
-      lock (connection) {
+      lock (connection)
+      {
         selectCoverKey.Value = info.FullName;
         selectCoverSize.Value = info.Length;
         selectCoverTime.Value = info.LastWriteTimeUtc.Ticks;
-        try {
+        try
+        {
           var data = selectCover.ExecuteScalar();
           return data is byte[];
         }
-        catch (DbException ex) {
+        catch (DbException ex)
+        {
           Error("Failed to lookup file cover existence from store", ex);
           return false;
         }
@@ -200,38 +213,42 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     internal Cover MaybeGetCover(BaseFile file)
     {
-      if (connection == null) {
-        return null;
-      }
+      if (connection == null) return null;
 
       var info = file.Item;
       byte[] data;
-      lock (connection) {
-        try {
+      lock (connection)
+      {
+        try
+        {
           selectCoverKey.Value = info.FullName;
           selectCoverSize.Value = info.Length;
           selectCoverTime.Value = info.LastWriteTimeUtc.Ticks;
-          try {
+          try
+          {
             data = selectCover.ExecuteScalar() as byte[];
           }
-          catch (DbException ex) {
+          catch (DbException ex)
+          {
             Error("Failed to lookup file cover from store", ex);
             return null;
           }
         }
-        finally {
+        finally
+        {
           selectCover.Cancel();
         }
       }
-      if (data == null) {
-        return null;
-      }
-      try {
-        using (var s = new MemoryStream(data)) {
+
+      if (data == null) return null;
+      try
+      {
+        using (var s = new MemoryStream(data))
+        {
           var ctx = new StreamingContext(
             StreamingContextStates.Persistence,
             new DeserializeInfo(null, info, DlnaMime.ImageJPEG)
-            );
+          );
           var formatter = new BinaryFormatter(null, ctx)
           {
             TypeFormat = FormatterTypeStyle.TypesWhenNeeded,
@@ -241,11 +258,13 @@ namespace NMaier.SimpleDlna.FileMediaServer
           return rv;
         }
       }
-      catch (SerializationException ex) {
+      catch (SerializationException ex)
+      {
         Debug("Failed to deserialize a cover", ex);
         return null;
       }
-      catch (Exception ex) {
+      catch (Exception ex)
+      {
         Fatal("Failed to deserialize a cover", ex);
         throw;
       }
@@ -254,32 +273,36 @@ namespace NMaier.SimpleDlna.FileMediaServer
     internal BaseFile MaybeGetFile(FileServer server, FileInfo info,
       DlnaMime type)
     {
-      if (connection == null) {
-        return null;
-      }
+      if (connection == null) return null;
       byte[] data;
-      lock (connection) {
-        try {
+      lock (connection)
+      {
+        try
+        {
           selectKey.Value = info.FullName;
           selectSize.Value = info.Length;
           selectTime.Value = info.LastWriteTimeUtc.Ticks;
-          try {
+          try
+          {
             data = select.ExecuteScalar() as byte[];
           }
-          catch (DbException ex) {
+          catch (DbException ex)
+          {
             Error("Failed to lookup file from store", ex);
             return null;
           }
         }
-        finally {
+        finally
+        {
           select.Cancel();
         }
       }
-      if (data == null) {
-        return null;
-      }
-      try {
-        using (var s = new MemoryStream(data)) {
+
+      if (data == null) return null;
+      try
+      {
+        using (var s = new MemoryStream(data))
+        {
           var ctx = new StreamingContext(
             StreamingContextStates.Persistence,
             new DeserializeInfo(server, info, type));
@@ -289,37 +312,37 @@ namespace NMaier.SimpleDlna.FileMediaServer
             AssemblyFormat = FormatterAssemblyStyle.Simple
           };
           var rv = formatter.Deserialize(s) as BaseFile;
-          if (rv == null) {
-            throw new SerializationException("Deserialized as null");
-          }
+          if (rv == null) throw new SerializationException("Deserialized as null");
           rv.Item = info;
           return rv;
         }
       }
-      catch (Exception ex) {
-        if (ex is TargetInvocationException || ex is SerializationException) {
+      catch (Exception ex)
+      {
+        if (ex is TargetInvocationException || ex is SerializationException)
+        {
           Debug("Failed to deserialize an item", ex);
           return null;
         }
+
         throw;
       }
     }
 
     internal void MaybeStoreFile(BaseFile file)
     {
-      if (connection == null) {
-        return;
-      }
-      if (!file.GetType().Attributes.HasFlag(TypeAttributes.Serializable)) {
-        return;
-      }
-      try {
-        using (var s = StreamManager.GetStream()) {
-          using (var c = StreamManager.GetStream()) {
+      if (connection == null) return;
+      if (!file.GetType().Attributes.HasFlag(TypeAttributes.Serializable)) return;
+      try
+      {
+        using (var s = StreamManager.GetStream())
+        {
+          using (var c = StreamManager.GetStream())
+          {
             var ctx = new StreamingContext(
               StreamingContextStates.Persistence,
               null
-              );
+            );
             var formatter = new BinaryFormatter(null, ctx)
             {
               TypeFormat = FormatterTypeStyle.TypesWhenNeeded,
@@ -327,33 +350,35 @@ namespace NMaier.SimpleDlna.FileMediaServer
             };
             formatter.Serialize(s, file);
             Cover cover = null;
-            try {
+            try
+            {
               cover = file.MaybeGetCover();
-              if (cover != null) {
-                formatter.Serialize(c, cover);
-              }
+              if (cover != null) formatter.Serialize(c, cover);
             }
-            catch (NotSupportedException) {
+            catch (NotSupportedException)
+            {
               // Ignore and store null.
             }
 
-            lock (connection) {
-              using (var trans = connection.BeginTransaction()) {
+            lock (connection)
+            {
+              using (var trans = connection.BeginTransaction())
+              {
                 insertKey.Value = file.Item.FullName;
                 insertSize.Value = file.Item.Length;
                 insertTime.Value = file.Item.LastWriteTimeUtc.Ticks;
                 insertData.Value = s.ToArray();
 
                 insertCover.Value = null;
-                if (cover != null) {
-                  insertCover.Value = c.ToArray();
-                }
-                try {
+                if (cover != null) insertCover.Value = c.ToArray();
+                try
+                {
                   insert.Transaction = trans;
                   insert.ExecuteNonQuery();
                   trans.Commit();
                 }
-                catch (DbException ex) {
+                catch (DbException ex)
+                {
                   Error("Failed to put file cover into store", ex);
                 }
               }
@@ -361,7 +386,8 @@ namespace NMaier.SimpleDlna.FileMediaServer
           }
         }
       }
-      catch (Exception ex) {
+      catch (Exception ex)
+      {
         Error("Failed to serialize an object of type " + file.GetType(), ex);
         throw;
       }
