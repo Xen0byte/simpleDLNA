@@ -19,13 +19,18 @@ namespace NMaier.SimpleDlna.FileMediaServer
       FileMode.Open,
       FileAccess.Read,
       FileShare.ReadWrite
-    );
+      );
 
-    public Stream WriteStream => throw new NotImplementedException();
+    public Stream WriteStream
+    {
+      get { throw new NotImplementedException(); }
+    }
 
     public void CloseStream(Stream stream)
     {
-      if (stream == null) return;
+      if (stream == null) {
+        return;
+      }
       stream.Close();
       stream.Dispose();
     }

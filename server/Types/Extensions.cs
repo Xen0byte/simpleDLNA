@@ -8,8 +8,8 @@ namespace NMaier.SimpleDlna.Server
     public static IEnumerable<string> GetExtensions(this DlnaMediaTypes types)
     {
       return (from i in DlnaMaps.Media2Ext
-        where types.HasFlag(i.Key)
-        select i.Value).SelectMany(i => i);
+              where types.HasFlag(i.Key)
+              select i.Value).SelectMany(i => i);
     }
   }
 }

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Timers;
+using log4net;
 using NMaier.SimpleDlna.Utilities;
 
 namespace NMaier.SimpleDlna.FileMediaServer
@@ -12,20 +13,17 @@ namespace NMaier.SimpleDlna.FileMediaServer
     private static readonly Ticker ticker = new Ticker();
 
     private static readonly ILog logger =
-      LogManager.GetLogger(typeof(FileReadStream));
+      LogManager.GetLogger(typeof (FileReadStream));
 
     private static readonly LeastRecentlyUsedDictionary<string, CacheItem> streams =
       new LeastRecentlyUsedDictionary<string, CacheItem>(15);
 
     private static void Expire()
     {
-      lock (streams)
-      {
-        foreach (var item in streams.ToArray())
-        {
+      lock (streams) {
+        foreach (var item in streams.ToArray()) {
           var diff = item.Value.InsertionPoint - DateTime.UtcNow;
-          if (diff.TotalSeconds > 5)
-          {
+          if (diff.TotalSeconds > 5) {
             item.Value.Stream?.Kill();
             streams.Remove(item.Key);
           }
@@ -35,9 +33,10 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     internal static void Clear()
     {
-      lock (streams)
-      {
-        foreach (var item in streams) item.Value.Stream.Kill();
+      lock (streams) {
+        foreach (var item in streams) {
+          item.Value.Stream.Kill();
+        }
         streams.Clear();
       }
     }
@@ -45,32 +44,26 @@ namespace NMaier.SimpleDlna.FileMediaServer
     internal static FileReadStream Get(FileInfo info)
     {
       var key = info.FullName;
-      lock (streams)
-      {
+      lock (streams) {
         CacheItem rv;
-        if (streams.TryGetValue(key, out rv))
-        {
+        if (streams.TryGetValue(key, out rv)) {
           streams.Remove(key);
           logger.DebugFormat("Retrieved file stream {0} from cache", key);
           return rv.Stream;
         }
       }
-
       logger.DebugFormat("Constructing file stream {0}", key);
       return new FileReadStream(info);
     }
 
     internal static void Recycle(FileReadStream stream)
     {
-      try
-      {
+      try {
         var key = stream.Name;
-        lock (streams)
-        {
+        lock (streams) {
           CacheItem ignore;
           if (!streams.TryGetValue(key, out ignore) ||
-              Equals(ignore.Stream, stream))
-          {
+              Equals(ignore.Stream, stream)) {
             logger.DebugFormat("Recycling {0}", key);
             stream.Seek(0, SeekOrigin.Begin);
             var removed = streams.AddAndPop(key, new CacheItem(stream));
@@ -79,11 +72,9 @@ namespace NMaier.SimpleDlna.FileMediaServer
           }
         }
       }
-      catch (Exception)
-      {
+      catch (Exception) {
         // no op
       }
-
       stream.Kill();
     }
 

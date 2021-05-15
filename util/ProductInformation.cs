@@ -7,51 +7,53 @@ namespace NMaier.SimpleDlna.Utilities
   {
     public static string Company
     {
-      get
-      {
+      get {
         var attributes = Assembly.GetEntryAssembly().GetCustomAttributes(
-          typeof(AssemblyCompanyAttribute), false);
-        if (attributes.Length == 0) return string.Empty;
-        return ((AssemblyCompanyAttribute) attributes[0]).Company;
+          typeof (AssemblyCompanyAttribute), false);
+        if (attributes.Length == 0) {
+          return string.Empty;
+        }
+        return ((AssemblyCompanyAttribute)attributes[0]).Company;
       }
     }
 
     public static string Copyright
     {
-      get
-      {
+      get {
         var attributes = Assembly.GetEntryAssembly().GetCustomAttributes(
-          typeof(AssemblyCopyrightAttribute), false);
-        if (attributes.Length == 0) return string.Empty;
-        return ((AssemblyCopyrightAttribute) attributes[0]).Copyright;
+          typeof (AssemblyCopyrightAttribute), false);
+        if (attributes.Length == 0) {
+          return string.Empty;
+        }
+        return ((AssemblyCopyrightAttribute)attributes[0]).Copyright;
       }
     }
 
     public static string ProductVersion
     {
-      get
-      {
+      get {
         var attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(
-          typeof(AssemblyInformationalVersionAttribute), false);
-        if (attributes.Length == 0) return string.Empty;
+          typeof (AssemblyInformationalVersionAttribute), false);
+        if (attributes.Length == 0) {
+          return string.Empty;
+        }
         var infoVersionAttr =
-          (AssemblyInformationalVersionAttribute) attributes[0];
+          (AssemblyInformationalVersionAttribute)attributes[0];
         return infoVersionAttr.InformationalVersion;
       }
     }
 
     public static string Title
     {
-      get
-      {
+      get {
         var attributes = Assembly.GetEntryAssembly().GetCustomAttributes(
-          typeof(AssemblyTitleAttribute), false);
-        if (attributes.Length > 0)
-        {
-          var titleAttribute = (AssemblyTitleAttribute) attributes[0];
-          if (!string.IsNullOrWhiteSpace(titleAttribute.Title)) return titleAttribute.Title;
+          typeof (AssemblyTitleAttribute), false);
+        if (attributes.Length > 0) {
+          var titleAttribute = (AssemblyTitleAttribute)attributes[0];
+          if (!string.IsNullOrWhiteSpace(titleAttribute.Title)) {
+            return titleAttribute.Title;
+          }
         }
-
         return Path.GetFileNameWithoutExtension(
           Assembly.GetExecutingAssembly().CodeBase);
       }

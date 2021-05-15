@@ -33,7 +33,9 @@ namespace NMaier.SimpleDlna.GUI
 
     public void AdoptInfo(ServerDescription other)
     {
-      if (other == null) throw new ArgumentNullException(nameof(other));
+      if (other == null) {
+        throw new ArgumentNullException(nameof(other));
+      }
       Directories = other.Directories;
       Name = other.Name;
       Order = other.Order;

@@ -16,9 +16,13 @@ namespace NMaier.SimpleDlna.Utilities
 
     public int CompareTo(NumericSortPart other)
     {
-      if (other == null) throw new ArgumentNullException(nameof(other));
+      if (other == null) {
+        throw new ArgumentNullException(nameof(other));
+      }
       var rv = val.CompareTo(other.val);
-      if (rv == 0) return len.CompareTo(other.len);
+      if (rv == 0) {
+        return len.CompareTo(other.len);
+      }
       return rv;
     }
   }

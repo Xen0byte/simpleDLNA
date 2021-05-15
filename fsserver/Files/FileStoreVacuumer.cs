@@ -36,27 +36,26 @@ namespace NMaier.SimpleDlna.FileMediaServer
     private void Run(object sender, ElapsedEventArgs e)
     {
       IDbConnection[] conns;
-      lock (connections)
-      {
+      lock (connections) {
         conns = (from c in connections.Values
-          let conn = c.Target as IDbConnection
-          where conn != null
-          select conn).ToArray();
+                 let conn = c.Target as IDbConnection
+                 where conn != null
+                 select conn).ToArray();
       }
-
-      if (conns.Length == 0) return;
+      if (conns.Length == 0) {
+        return;
+      }
 
       Task.Factory.StartNew(() =>
       {
-        foreach (var conn in conns)
-          try
-          {
+        foreach (var conn in conns) {
+          try {
             Vacuum(conn);
           }
-          catch (Exception ex)
-          {
+          catch (Exception ex) {
             Error("Failed to vacuum a store", ex);
           }
+        }
       }, TaskCreationOptions.LongRunning | TaskCreationOptions.AttachedToParent);
 
       Schedule();
@@ -74,70 +73,55 @@ namespace NMaier.SimpleDlna.FileMediaServer
       DebugFormat("VACUUM {0}", connection.Database);
       var files = new List<string>();
 
-      lock (connection)
-      {
-        using (var q = connection.CreateCommand())
-        {
+      lock (connection) {
+        using (var q = connection.CreateCommand()) {
           q.CommandText = "SELECT key FROM store";
-          using (var r = q.ExecuteReader())
-          {
-            while (r.Read()) files.Add(r.GetString(0));
+          using (var r = q.ExecuteReader()) {
+            while (r.Read()) {
+              files.Add(r.GetString(0));
+            }
           }
         }
       }
-
       var gone = from f in files
-        let m = new FileInfo(f)
-        where !m.Exists
-        select f;
-      lock (connection)
-      {
-        using (var trans = connection.BeginTransaction())
-        {
-          using (var q = connection.CreateCommand())
-          {
+                 let m = new FileInfo(f)
+                 where !m.Exists
+                 select f;
+      lock (connection) {
+        using (var trans = connection.BeginTransaction()) {
+          using (var q = connection.CreateCommand()) {
             q.Transaction = trans;
             q.CommandText = "DELETE FROM store WHERE key = ?";
             var p = q.CreateParameter();
             p.DbType = DbType.String;
             q.Parameters.Add(p);
-            foreach (var f in gone)
-            {
+            foreach (var f in gone) {
               p.Value = f;
-              lock (connection)
-              {
+              lock (connection) {
                 q.ExecuteNonQuery();
               }
-
               DebugFormat("Purging {0}", f);
             }
           }
         }
       }
-
-      lock (connection)
-      {
-        using (var q = connection.CreateCommand())
-        {
+      lock (connection) {
+        using (var q = connection.CreateCommand()) {
           q.CommandText = "VACUUM";
-          try
-          {
+          try {
             q.ExecuteNonQuery();
           }
-          catch (Exception ex)
-          {
+          catch (Exception ex) {
             Error("Failed to vacuum", ex);
           }
         }
       }
-
       Debug("Vacuum done!");
     }
 
     public void Add(IDbConnection connection)
     {
-      lock (connections)
-      {
+      lock (connections) {
         connections[connection.ConnectionString] =
           new WeakReference(connection);
       }
@@ -145,8 +129,7 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     public void Remove(IDbConnection connection)
     {
-      lock (connections)
-      {
+      lock (connections) {
         connections.Remove(connection.ConnectionString);
       }
     }

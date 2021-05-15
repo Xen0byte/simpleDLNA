@@ -17,7 +17,9 @@ namespace NMaier.SimpleDlna.Utilities
 
     public int CompareTo(StringSortPart other)
     {
-      if (other == null) throw new ArgumentNullException(nameof(other));
+      if (other == null) {
+        throw new ArgumentNullException(nameof(other));
+      }
       return comparer.Compare(str, other.str);
     }
   }

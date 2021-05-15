@@ -19,16 +19,14 @@ namespace NMaier.SimpleDlna.Server
       ResourceManager aResourceManager, string aResource)
     {
       Status = aStatus;
-      try
-      {
-        resource = (byte[]) aResourceManager.GetObject(aResource);
+      try {
+        resource = (byte[])aResourceManager.GetObject(aResource);
 
         Headers["Content-Type"] = type;
         var len = resource?.Length.ToString() ?? "0";
         Headers["Content-Length"] = len;
       }
-      catch (Exception ex)
-      {
+      catch (Exception ex) {
         Error("Failed to prepare resource " + aResource, ex);
         throw;
       }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NMaier.SimpleDlna.Utilities
 {
@@ -13,10 +14,10 @@ namespace NMaier.SimpleDlna.Utilities
     public int Count => list.Count;
 
     public ICollection<string> Keys => (from i in list
-      select i.Key).ToList();
+                                        select i.Key).ToList();
 
     public ICollection<string> Values => (from i in list
-      select i.Value).ToList();
+                                          select i.Value).ToList();
 
     IEnumerator IEnumerable.GetEnumerator()
     {
@@ -66,8 +67,8 @@ namespace NMaier.SimpleDlna.Utilities
     public IEnumerable<string> GetValuesForKey(string key, StringComparer comparer)
     {
       return from i in list
-        where comparer.Equals(i.Key, key)
-        select i.Value;
+             where comparer.Equals(i.Key, key)
+             select i.Value;
     }
   }
 }

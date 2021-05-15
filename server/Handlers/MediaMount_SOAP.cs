@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
@@ -26,7 +26,7 @@ namespace NMaier.SimpleDlna.Server
     private const string NS_UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
 
     private static readonly string featureList =
-      Encoding.UTF8.GetString((byte[]) Resources.ResourceManager.GetObject("x_featurelist") ?? new byte[0]);
+      Encoding.UTF8.GetString((byte[])Resources.ResourceManager.GetObject("x_featurelist") ?? new byte[0]);
 
     private static readonly IDictionary<string, AttributeCollection> soapCache =
       new LeastRecentlyUsedDictionary<string, AttributeCollection>(200);
@@ -39,12 +39,10 @@ namespace NMaier.SimpleDlna.Server
     {
       var bookmarkable = resource as IBookmarkable;
       var bookmark = bookmarkable?.Bookmark;
-      if (bookmark != null)
-      {
+      if (bookmark != null) {
         var dcmInfo = item.OwnerDocument?.CreateElement(
           "sec", "dcmInfo", NS_SEC);
-        if (dcmInfo != null)
-        {
+        if (dcmInfo != null) {
           dcmInfo.InnerText = $"BM={bookmark.Value}";
           item.AppendChild(dcmInfo);
         }
@@ -55,11 +53,14 @@ namespace NMaier.SimpleDlna.Server
       XmlNode item)
     {
       var result = item.OwnerDocument;
-      if (result == null) return;
+      if (result == null) {
+        return;
+      }
       var cover = resource as IMediaCover;
-      if (cover == null) return;
-      try
-      {
+      if (cover == null) {
+        return;
+      }
+      try {
         var c = cover.Cover;
         var curl =
           $"http://{request.LocalEndPoint.Address}:{request.LocalEndPoint.Port}{Prefix}cover/{resource.Id}/i.jpg";
@@ -82,47 +83,21 @@ namespace NMaier.SimpleDlna.Server
         res.SetAttribute("protocolInfo", string.Format(
           "http-get:*:{1}:DLNA.ORG_PN={0};DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS={2}",
           c.PN, DlnaMaps.Mime[c.Type], DlnaMaps.DefaultStreaming
-        ));
+                                           ));
         var width = c.MetaWidth;
         var height = c.MetaHeight;
-        if (width.HasValue && height.HasValue)
+        if (width.HasValue && height.HasValue) {
           res.SetAttribute("resolution", $"{width.Value}x{height.Value}");
-        else
+        }
+        else {
           res.SetAttribute("resolution", "200x200");
+        }
         res.SetAttribute("protocolInfo",
-          $"http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN;DLNA.ORG_OP=01;DLNA.ORG_CI=1;DLNA.ORG_FLAGS={DlnaMaps.DefaultInteractive}");
+                         $"http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN;DLNA.ORG_OP=01;DLNA.ORG_CI=1;DLNA.ORG_FLAGS={DlnaMaps.DefaultInteractive}");
         item.AppendChild(res);
       }
-      catch (Exception)
-      {
+      catch (Exception) {
         // ignored
-      }
-    }
-
-    private void AddSubtitle(IRequest request, IMediaResource resource,
-      XmlElement item)
-    {
-      var result = item.OwnerDocument;
-      var video = resource as IMediaVideoResource;
-      if (video == null) return;
-      try
-      {
-        if (video.Subtitle.HasSubtitle)
-        {
-          var subtitle = result.CreateElement(string.Empty, "res", NS_DIDL);
-          subtitle.InnerText = string.Format(
-            "http://{0}:{1}{2}subtitle/{3}/st.srt",
-            request.LocalEndPoint.Address,
-            request.LocalEndPoint.Port,
-            Prefix,
-            resource.Id
-          );
-          subtitle.SetAttribute("protocolInfo", "http-get:*:text/srt:*");
-          item.AppendChild(subtitle);
-        }
-      }
-      catch (Exception)
-      {
       }
     }
 
@@ -130,38 +105,31 @@ namespace NMaier.SimpleDlna.Server
     {
       string prop;
       var ownerDocument = item.OwnerDocument;
-      if (ownerDocument == null) throw new ArgumentNullException(nameof(item));
-      if (props.TryGetValue("DateO", out prop))
-      {
+      if (ownerDocument == null) {
+        throw new ArgumentNullException(nameof(item));
+      }
+      if (props.TryGetValue("DateO", out prop)) {
         var e = ownerDocument.CreateElement("dc", "date", NS_DC);
         e.InnerText = prop;
         item.AppendChild(e);
       }
-
-      if (props.TryGetValue("Genre", out prop))
-      {
+      if (props.TryGetValue("Genre", out prop)) {
         var e = ownerDocument.CreateElement("upnp", "genre", NS_UPNP);
         e.InnerText = prop;
         item.AppendChild(e);
       }
-
-      if (props.TryGetValue("Description", out prop))
-      {
+      if (props.TryGetValue("Description", out prop)) {
         var e = ownerDocument.CreateElement("dc", "description", NS_DC);
         e.InnerText = prop;
         item.AppendChild(e);
       }
-
-      if (props.TryGetValue("Artist", out prop))
-      {
+      if (props.TryGetValue("Artist", out prop)) {
         var e = ownerDocument.CreateElement("upnp", "artist", NS_UPNP);
         e.SetAttribute("role", "AlbumArtist");
         e.InnerText = prop;
         item.AppendChild(e);
       }
-
-      if (props.TryGetValue("Performer", out prop))
-      {
+      if (props.TryGetValue("Performer", out prop)) {
         var e = ownerDocument.CreateElement("upnp", "artist", NS_UPNP);
         e.SetAttribute("role", "Performer");
         e.InnerText = prop;
@@ -170,31 +138,24 @@ namespace NMaier.SimpleDlna.Server
         e.InnerText = prop;
         item.AppendChild(e);
       }
-
-      if (props.TryGetValue("Album", out prop))
-      {
+      if (props.TryGetValue("Album", out prop)) {
         var e = ownerDocument.CreateElement("upnp", "album", NS_UPNP);
         e.InnerText = prop;
         item.AppendChild(e);
       }
-
-      if (props.TryGetValue("Track", out prop))
-      {
+      if (props.TryGetValue("Track", out prop)) {
         var e = ownerDocument.CreateElement(
           "upnp", "originalTrackNumber", NS_UPNP);
         e.InnerText = prop;
         item.AppendChild(e);
       }
-
-      if (props.TryGetValue("Creator", out prop))
-      {
+      if (props.TryGetValue("Creator", out prop)) {
         var e = ownerDocument.CreateElement("dc", "creator", NS_DC);
         e.InnerText = prop;
         item.AppendChild(e);
       }
 
-      if (props.TryGetValue("Director", out prop))
-      {
+      if (props.TryGetValue("Director", out prop)) {
         var e = ownerDocument.CreateElement("upnp", "director", NS_UPNP);
         e.InnerText = prop;
         item.AppendChild(e);
@@ -205,23 +166,25 @@ namespace NMaier.SimpleDlna.Server
       IMediaResource resource,
       XmlNode item)
     {
-      if (request == null) throw new ArgumentNullException(nameof(request));
+      if (request == null) {
+        throw new ArgumentNullException(nameof(request));
+      }
       var mvi = resource as IMetaVideoItem;
-      if (mvi == null) return;
-      try
-      {
+      if (mvi == null) {
+        return;
+      }
+      try {
         var ownerDocument = item.OwnerDocument;
         var actors = mvi.MetaActors;
-        if (actors != null && ownerDocument != null)
-          foreach (var actor in actors)
-          {
+        if (actors != null && ownerDocument != null) {
+          foreach (var actor in actors) {
             var e = ownerDocument.CreateElement("upnp", "actor", NS_UPNP);
             e.InnerText = actor;
             item.AppendChild(e);
           }
+        }
       }
-      catch (Exception)
-      {
+      catch (Exception) {
         // ignored
       }
 #if ANNOUNCE_SUBTITLE_IN_SOAP
@@ -261,8 +224,7 @@ namespace NMaier.SimpleDlna.Server
       var title = result.CreateElement("dc", "title", NS_DC);
       title.InnerText = f.Title;
       container.AppendChild(title);
-      if (meta != null)
-      {
+      if (meta != null) {
         var date = result.CreateElement("dc", "date", NS_DC);
         date.InnerText = meta.InfoDate.ToString("o");
         container.AppendChild(date);
@@ -301,17 +263,22 @@ namespace NMaier.SimpleDlna.Server
         $"http://{request.LocalEndPoint.Address}:{request.LocalEndPoint.Port}{Prefix}file/{resource.Id}/res";
 
       string prop;
-      if (props.TryGetValue("SizeRaw", out prop)) res.SetAttribute("size", prop);
-      if (props.TryGetValue("Resolution", out prop)) res.SetAttribute("resolution", prop);
-      if (props.TryGetValue("Duration", out prop)) res.SetAttribute("duration", prop);
+      if (props.TryGetValue("SizeRaw", out prop)) {
+        res.SetAttribute("size", prop);
+      }
+      if (props.TryGetValue("Resolution", out prop)) {
+        res.SetAttribute("resolution", prop);
+      }
+      if (props.TryGetValue("Duration", out prop)) {
+        res.SetAttribute("duration", prop);
+      }
 
       res.SetAttribute("protocolInfo", string.Format(
         "http-get:*:{1}:DLNA.ORG_PN={0};DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS={2}",
         resource.PN, DlnaMaps.Mime[resource.Type], DlnaMaps.DefaultStreaming
-      ));
+                                         ));
       item.AppendChild(res);
 
-      AddSubtitle(request, resource, item);
       AddCover(request, resource, item);
       result.DocumentElement?.AppendChild(item);
     }
@@ -321,31 +288,28 @@ namespace NMaier.SimpleDlna.Server
       int requested)
     {
       var provided = 0;
-      foreach (var i in root.ChildFolders)
-      {
-        if (start > 0)
-        {
+      foreach (var i in root.ChildFolders) {
+        if (start > 0) {
           start--;
           continue;
         }
-
         Browse_AddFolder(result, i);
-        if (++provided == requested) break;
+        if (++provided == requested) {
+          break;
+        }
       }
-
-      if (provided != requested)
-        foreach (var i in root.ChildItems)
-        {
-          if (start > 0)
-          {
+      if (provided != requested) {
+        foreach (var i in root.ChildItems) {
+          if (start > 0) {
             start--;
             continue;
           }
-
           Browse_AddItem(request, result, i);
-          if (++provided == requested) break;
+          if (++provided == requested) {
+            break;
+          }
         }
-
+      }
       return provided;
     }
 
@@ -360,21 +324,19 @@ namespace NMaier.SimpleDlna.Server
       IMediaResource resource)
     {
       var objectClass = result.CreateElement("upnp", "class", NS_UPNP);
-      switch (resource.MediaType)
-      {
-        case DlnaMediaTypes.Video:
-          objectClass.InnerText = "object.item.videoItem.movie";
-          break;
-        case DlnaMediaTypes.Image:
-          objectClass.InnerText = "object.item.imageItem.photo";
-          break;
-        case DlnaMediaTypes.Audio:
-          objectClass.InnerText = "object.item.audioItem.musicTrack";
-          break;
-        default:
-          throw new NotSupportedException();
+      switch (resource.MediaType) {
+      case DlnaMediaTypes.Video:
+        objectClass.InnerText = "object.item.videoItem.movie";
+        break;
+      case DlnaMediaTypes.Image:
+        objectClass.InnerText = "object.item.imageItem.photo";
+        break;
+      case DlnaMediaTypes.Audio:
+        objectClass.InnerText = "object.item.audioItem.musicTrack";
+        break;
+      default:
+        throw new NotSupportedException();
       }
-
       return objectClass;
     }
 
@@ -383,7 +345,9 @@ namespace NMaier.SimpleDlna.Server
     {
       var key = Prefix + sparams.HeaderBlock;
       AttributeCollection rv;
-      if (soapCache.TryGetValue(key, out rv)) return rv;
+      if (soapCache.TryGetValue(key, out rv)) {
+        return rv;
+      }
 
       var id = sparams["ObjectID"];
       var flag = sparams["BrowseFlag"];
@@ -391,20 +355,23 @@ namespace NMaier.SimpleDlna.Server
       var requested = 20;
       var provided = 0;
       var start = 0;
-      try
-      {
+      try {
         if (int.TryParse(sparams["RequestedCount"], out requested) &&
-            requested <= 0)
+            requested <= 0) {
           requested = 20;
-        if (int.TryParse(sparams["StartingIndex"], out start) && start <= 0) start = 0;
+        }
+        if (int.TryParse(sparams["StartingIndex"], out start) && start <= 0) {
+          start = 0;
+        }
       }
-      catch (Exception ex)
-      {
+      catch (Exception ex) {
         Debug("Not all params provided", ex);
       }
 
       var root = GetItem(id) as IMediaFolder;
-      if (root == null) throw new ArgumentException("Invalid id");
+      if (root == null) {
+        throw new ArgumentException("Invalid id");
+      }
       var result = new XmlDocument();
 
       var didl = result.CreateElement(string.Empty, "DIDL-Lite", NS_DIDL);
@@ -414,17 +381,14 @@ namespace NMaier.SimpleDlna.Server
       didl.SetAttribute("xmlns:sec", NS_SEC);
       result.AppendChild(didl);
 
-      if (flag == "BrowseMetadata")
-      {
+      if (flag == "BrowseMetadata") {
         Browse_AddFolder(result, root);
         provided++;
       }
-      else
-      {
+      else {
         provided = BrowseFolder_AddItems(
           request, result, root, start, requested);
       }
-
       var resXML = result.OuterXml;
       rv = new AttributeCollection
       {
@@ -504,18 +468,17 @@ namespace NMaier.SimpleDlna.Server
     {
       var id = sparams["ObjectID"];
       var item = GetItem(id) as IBookmarkable;
-      if (item != null)
-      {
+      if (item != null) {
         var newbookmark = long.Parse(sparams["PosSecond"]);
-        if (newbookmark > 30) newbookmark -= 5;
+        if (newbookmark > 30) {
+          newbookmark -= 5;
+        }
         if (newbookmark > 30 || !item.Bookmark.HasValue ||
-            item.Bookmark.Value < 60)
-        {
+            item.Bookmark.Value < 60) {
           item.Bookmark = newbookmark;
           soapCache.Clear();
         }
       }
-
       return new RawHeaders();
     }
 
@@ -525,15 +488,17 @@ namespace NMaier.SimpleDlna.Server
       soap.LoadXml(request.Body);
       var sparams = new RawHeaders();
       var body = soap.SelectSingleNode("//soap:Body", namespaceMgr);
-      if (body == null) throw new HttpStatusException(HttpCode.InternalError);
+      if (body == null) {
+        throw new HttpStatusException(HttpCode.InternalError);
+      }
       var method = body.FirstChild;
-      foreach (var p in method.ChildNodes)
-      {
+      foreach (var p in method.ChildNodes) {
         var e = p as XmlElement;
-        if (e == null) continue;
+        if (e == null) {
+          continue;
+        }
         sparams.Add(e.LocalName, e.InnerText.Trim());
       }
-
       var env = new XmlDocument();
       env.AppendChild(env.CreateXmlDeclaration("1.0", "utf-8", "yes"));
       var envelope = env.CreateElement("SOAP-ENV", "Envelope", NS_SOAPENV);
@@ -546,63 +511,58 @@ namespace NMaier.SimpleDlna.Server
       env.DocumentElement?.AppendChild(rbody);
 
       var code = HttpCode.Ok;
-      try
-      {
+      try {
         IEnumerable<KeyValuePair<string, string>> result;
-        switch (method.LocalName)
-        {
-          case "GetSearchCapabilities":
-            result = HandleGetSearchCapabilities();
-            break;
-          case "GetSortCapabilities":
-            result = HandleGetSortCapabilities();
-            break;
-          case "GetSystemUpdateID":
-            result = HandleGetSystemUpdateID();
-            break;
-          case "Browse":
-            result = HandleBrowse(request, sparams);
-            break;
-          case "X_GetFeatureList":
-            result = HandleXGetFeatureList();
-            break;
-          case "X_SetBookmark":
-            result = HandleXSetBookmark(sparams);
-            break;
-          case "GetCurrentConnectionIDs":
-            result = HandleGetCurrentConnectionIDs();
-            break;
-          case "GetCurrentConnectionInfo":
-            result = HandleGetCurrentConnectionInfo();
-            break;
-          case "GetProtocolInfo":
-            result = HandleGetProtocolInfo();
-            break;
-          case "IsAuthorized":
-            result = HandleIsAuthorized();
-            break;
-          case "IsValidated":
-            result = HandleIsValidated();
-            break;
-          case "RegisterDevice":
-            result = HandleRegisterDevice();
-            break;
-          default:
-            throw new HttpStatusException(HttpCode.NotFound);
+        switch (method.LocalName) {
+        case "GetSearchCapabilities":
+          result = HandleGetSearchCapabilities();
+          break;
+        case "GetSortCapabilities":
+          result = HandleGetSortCapabilities();
+          break;
+        case "GetSystemUpdateID":
+          result = HandleGetSystemUpdateID();
+          break;
+        case "Browse":
+          result = HandleBrowse(request, sparams);
+          break;
+        case "X_GetFeatureList":
+          result = HandleXGetFeatureList();
+          break;
+        case "X_SetBookmark":
+          result = HandleXSetBookmark(sparams);
+          break;
+        case "GetCurrentConnectionIDs":
+          result = HandleGetCurrentConnectionIDs();
+          break;
+        case "GetCurrentConnectionInfo":
+          result = HandleGetCurrentConnectionInfo();
+          break;
+        case "GetProtocolInfo":
+          result = HandleGetProtocolInfo();
+          break;
+        case "IsAuthorized":
+          result = HandleIsAuthorized();
+          break;
+        case "IsValidated":
+          result = HandleIsValidated();
+          break;
+        case "RegisterDevice":
+          result = HandleRegisterDevice();
+          break;
+        default:
+          throw new HttpStatusException(HttpCode.NotFound);
         }
-
         var response = env.CreateElement($"u:{method.LocalName}Response", method.NamespaceURI);
         rbody.AppendChild(response);
 
-        foreach (var i in result)
-        {
+        foreach (var i in result) {
           var ri = env.CreateElement(i.Key);
           ri.InnerText = i.Value;
           response.AppendChild(ri);
         }
       }
-      catch (Exception ex)
-      {
+      catch (Exception ex) {
         code = HttpCode.InternalError;
         var fault = env.CreateElement("SOAP-ENV", "Fault", NS_SOAPENV);
         var faultCode = env.CreateElement("faultcode");

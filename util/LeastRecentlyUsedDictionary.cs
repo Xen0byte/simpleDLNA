@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace NMaier.SimpleDlna.Utilities
@@ -21,15 +22,16 @@ namespace NMaier.SimpleDlna.Utilities
     public LeastRecentlyUsedDictionary(uint capacity)
     {
       Capacity = capacity;
-      toDrop = Math.Min(10, (uint) (capacity * 0.07));
+      toDrop = Math.Min(10, (uint)(capacity * 0.07));
     }
 
     public LeastRecentlyUsedDictionary(int capacity)
-      : this((uint) capacity)
+      : this((uint)capacity)
     {
     }
 
-    [CLSCompliant(false)] public uint Capacity { get; }
+    [CLSCompliant(false)]
+    public uint Capacity { get; }
 
     public int Count => items.Count;
 
@@ -38,14 +40,13 @@ namespace NMaier.SimpleDlna.Utilities
     public ICollection<TKey> Keys => items.Keys;
 
     public ICollection<TValue> Values => (from i in items.Values
-      select i.Value.Value).ToList();
+                                          select i.Value.Value).ToList();
 
     public TValue this[TKey key]
     {
-      get => items[key].Value.Value;
+      get { return items[key].Value.Value; }
       [MethodImpl(MethodImplOptions.Synchronized)]
-      set
-      {
+      set {
         Remove(key);
         Add(key, value);
       }
@@ -73,8 +74,7 @@ namespace NMaier.SimpleDlna.Utilities
     public void Clear()
     {
       items.Clear();
-      lock (order)
-      {
+      lock (order) {
         order.Clear();
       }
     }
@@ -103,16 +103,12 @@ namespace NMaier.SimpleDlna.Utilities
     public bool Remove(TKey key)
     {
       LinkedListNode<KeyValuePair<TKey, TValue>> node;
-      if (items.TryRemove(key, out node))
-      {
-        lock (order)
-        {
+      if (items.TryRemove(key, out node)) {
+        lock (order) {
           order.Remove(node);
         }
-
         return true;
       }
-
       return false;
     }
 
@@ -120,45 +116,40 @@ namespace NMaier.SimpleDlna.Utilities
     public bool Remove(KeyValuePair<TKey, TValue> item)
     {
       LinkedListNode<KeyValuePair<TKey, TValue>> node;
-      if (items.TryRemove(item.Key, out node))
-      {
-        lock (order)
-        {
+      if (items.TryRemove(item.Key, out node)) {
+        lock (order) {
           order.Remove(node);
         }
-
         return true;
       }
-
       return false;
     }
 
     public bool TryGetValue(TKey key, out TValue value)
     {
       LinkedListNode<KeyValuePair<TKey, TValue>> node;
-      if (items.TryGetValue(key, out node))
-      {
+      if (items.TryGetValue(key, out node)) {
         value = node.Value.Value;
         return true;
       }
-
-      value = default;
+      value = default(TValue);
       return false;
     }
 
     private TValue MaybeDropSome()
     {
-      if (Count <= Capacity) return default;
-      lock (order)
-      {
+      if (Count <= Capacity) {
+        return default(TValue);
+      }
+      lock (order) {
         var rv = default(TValue);
-        for (var i = 0; i < toDrop; ++i)
-        {
+        for (var i = 0; i < toDrop; ++i) {
           LinkedListNode<KeyValuePair<TKey, TValue>> item;
-          if (items.TryRemove(order.Last.Value.Key, out item)) rv = item.Value.Value;
+          if (items.TryRemove(order.Last.Value.Key, out item)) {
+            rv = item.Value.Value;
+          }
           order.RemoveLast();
         }
-
         return rv;
       }
     }
@@ -167,11 +158,9 @@ namespace NMaier.SimpleDlna.Utilities
     public TValue AddAndPop(KeyValuePair<TKey, TValue> item)
     {
       LinkedListNode<KeyValuePair<TKey, TValue>> node;
-      lock (order)
-      {
+      lock (order) {
         node = order.AddFirst(item);
       }
-
       items.TryAdd(item.Key, node);
       return MaybeDropSome();
     }

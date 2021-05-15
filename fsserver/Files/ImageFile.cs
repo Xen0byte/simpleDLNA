@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization;
 using NMaier.SimpleDlna.Server;
+using TagLib;
 using File = TagLib.File;
 
 namespace NMaier.SimpleDlna.FileMediaServer
@@ -22,9 +23,9 @@ namespace NMaier.SimpleDlna.FileMediaServer
       height;
 
     private ImageFile(SerializationInfo info, StreamingContext context)
-      : this(((DeserializeInfo) context.Context).Server,
-        ((DeserializeInfo) context.Context).Info,
-        ((DeserializeInfo) context.Context).Type)
+      : this(((DeserializeInfo)context.Context).Server,
+             ((DeserializeInfo)context.Context).Info,
+             ((DeserializeInfo)context.Context).Type)
     {
     }
 
@@ -48,8 +49,7 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     public string MetaCreator
     {
-      get
-      {
+      get {
         MaybeInit();
         return creator;
       }
@@ -57,8 +57,7 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     public string MetaDescription
     {
-      get
-      {
+      get {
         MaybeInit();
         return description;
       }
@@ -66,8 +65,7 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     public int? MetaHeight
     {
-      get
-      {
+      get {
         MaybeInit();
         return height;
       }
@@ -75,8 +73,7 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     public int? MetaWidth
     {
-      get
-      {
+      get {
         MaybeInit();
         return width;
       }
@@ -84,33 +81,40 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     public override IHeaders Properties
     {
-      get
-      {
+      get {
         MaybeInit();
         var rv = base.Properties;
-        if (description != null) rv.Add("Description", description);
-        if (creator != null) rv.Add("Creator", creator);
-        if (width != null && height != null)
+        if (description != null) {
+          rv.Add("Description", description);
+        }
+        if (creator != null) {
+          rv.Add("Creator", creator);
+        }
+        if (width != null && height != null) {
           rv.Add(
             "Resolution",
             $"{width.Value}x{height.Value}"
-          );
+            );
+        }
         return rv;
       }
     }
 
     public override string Title
     {
-      get
-      {
-        if (!string.IsNullOrWhiteSpace(title)) return $"{base.Title} — {title}";
+      get {
+        if (!string.IsNullOrWhiteSpace(title)) {
+          return $"{base.Title} — {title}";
+        }
         return base.Title;
       }
     }
 
     public void GetObjectData(SerializationInfo info, StreamingContext ctx)
     {
-      if (info == null) throw new ArgumentNullException(nameof(info));
+      if (info == null) {
+        throw new ArgumentNullException(nameof(info));
+      }
       MaybeInit();
       info.AddValue("cr", creator);
       info.AddValue("d", description);
@@ -121,34 +125,36 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
     private void MaybeInit()
     {
-      if (initialized) return;
+      if (initialized) {
+        return;
+      }
 
-      try
-      {
-        using (var tl = File.Create(new TagLibFileAbstraction(Item)))
-        {
-          try
-          {
+      try {
+        using (var tl = File.Create(new TagLibFileAbstraction(Item))) {
+          try {
             width = tl.Properties.PhotoWidth;
             height = tl.Properties.PhotoHeight;
           }
-          catch (Exception ex)
-          {
+          catch (Exception ex) {
             Debug("Failed to transpose Properties props", ex);
           }
 
-          try
-          {
-            var t = ((TagLib.Image.File) tl).ImageTag;
+          try {
+            var t = ((TagLib.Image.File)tl).ImageTag;
             title = t.Title;
-            if (string.IsNullOrWhiteSpace(title)) title = null;
+            if (string.IsNullOrWhiteSpace(title)) {
+              title = null;
+            }
             description = t.Comment;
-            if (string.IsNullOrWhiteSpace(description)) description = null;
+            if (string.IsNullOrWhiteSpace(description)) {
+              description = null;
+            }
             creator = t.Creator;
-            if (string.IsNullOrWhiteSpace(creator)) creator = null;
+            if (string.IsNullOrWhiteSpace(creator)) {
+              creator = null;
+            }
           }
-          catch (Exception ex)
-          {
+          catch (Exception ex) {
             Debug("Failed to transpose Tag props", ex);
           }
         }
@@ -158,14 +164,17 @@ namespace NMaier.SimpleDlna.FileMediaServer
 
         Server.UpdateFileCache(this);
       }
-      catch (CorruptFileException ex)
-      {
+      catch (CorruptFileException ex) {
         Debug(
           "Failed to read meta data via taglib for file " + Item.FullName, ex);
         initialized = true;
       }
-      catch (Exception ex)
-      {
+      catch (UnsupportedFormatException ex) {
+        Debug(
+          "Failed to read meta data via taglib for file " + Item.FullName, ex);
+        initialized = true;
+      }
+      catch (Exception ex) {
         Warn(
           "Unhandled exception reading meta data for file " + Item.FullName,
           ex);
